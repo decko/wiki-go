@@ -105,6 +105,11 @@ func joinSections(sections []Section) string {
 	return result.String()
 }
 
+var (
+	imgLinkRe     = regexp.MustCompile(`!\[([^\]]*)\]\(([^)]+)\)`)
+	regularLinkRe = regexp.MustCompile(`\[([^\]]*)\]\(([^)]+)\)`)
+)
+
 // LinkPreprocessor resolves local file references
 func LinkPreprocessor(markdown string, docPath string) string {
 	// This is a simplified implementation
@@ -117,15 +122,25 @@ func LinkPreprocessor(markdown string, docPath string) string {
 	for i := range sections {
 		if !sections[i].isCode {
 			// Process image links: ![alt](local-path)
-			imgRe := regexp.MustCompile(`!\[([^\]]*)\]\(([^)]+)\)`)
-			sections[i].content = imgRe.ReplaceAllStringFunc(sections[i].content, func(match string) string {
-				parts := imgRe.FindStringSubmatch(match)
+			sections[i].content = imgLinkRe.ReplaceAllStringFunc(sections[i].content, func(match string) string {
+				parts := imgLinkRe.FindStringSubmatch(match)
 				if len(parts) < 3 {
 					return match
 				}
 
 				alt := parts[1]
-				path := parts[2]
+				rawPath := parts[2]
+
+				// Strip optional title from path (e.g. `image.png "title"` or `image.png 'title'`)
+				path := rawPath
+				title := ""
+				if idx := strings.Index(rawPath, " \""); idx != -1 {
+					path = rawPath[:idx]
+					title = rawPath[idx:]
+				} else if idx := strings.Index(rawPath, " '"); idx != -1 {
+					path = rawPath[:idx]
+					title = rawPath[idx:]
+				}
 
 				// Check attachment exists BEFORE resolving to API path
 				notFound := false
@@ -143,15 +158,14 @@ func LinkPreprocessor(markdown string, docPath string) string {
 				}
 
 				if notFound {
-					return "<span class=\"notfound\">![" + alt + "](" + path + ")</span>"
+					return "<span class=\"notfound\">![" + alt + "](" + path + title + ")</span>"
 				}
-				return "![" + alt + "](" + path + ")"
+				return "![" + alt + "](" + path + title + ")"
 			})
 
 			// Process regular links: [text](local-path)
-			linkRe := regexp.MustCompile(`\[([^\]]*)\]\(([^)]+)\)`)
-			sections[i].content = linkRe.ReplaceAllStringFunc(sections[i].content, func(match string) string {
-				parts := linkRe.FindStringSubmatch(match)
+			sections[i].content = regularLinkRe.ReplaceAllStringFunc(sections[i].content, func(match string) string {
+				parts := regularLinkRe.FindStringSubmatch(match)
 				if len(parts) < 3 {
 					return match
 				}
