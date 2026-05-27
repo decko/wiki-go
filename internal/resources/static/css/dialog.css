@@ -429,6 +429,22 @@ body:has([class*="-dialog"].active) {
     margin: 0 24px;
     border-bottom: 1px solid var(--border-color);
     flex-shrink: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-color) transparent;
+}
+
+.settings-tabs::-webkit-scrollbar,
+.file-upload-tabs::-webkit-scrollbar {
+    height: 4px;
+}
+
+.settings-tabs::-webkit-scrollbar-thumb,
+.file-upload-tabs::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 2px;
 }
 
 .tab-button {
@@ -441,6 +457,8 @@ body:has([class*="-dialog"].active) {
     font-size: 1rem;
     font-weight: 500;
     transition: color 0.2s, border-color 0.2s;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .tab-button:hover {
@@ -582,30 +600,7 @@ body:has([class*="-dialog"].active) {
 }
 
 @media (max-width: 950px) {
-    .settings-tabs,
-    .file-upload-tabs {
-        overflow-x: auto;
-        overflow-y: hidden;
-        -webkit-overflow-scrolling: touch;
-        /* Hide scrollbar but keep functionality */
-        scrollbar-width: thin;
-        scrollbar-color: var(--border-color) transparent;
-    }
-    
-    .settings-tabs::-webkit-scrollbar,
-    .file-upload-tabs::-webkit-scrollbar {
-        height: 4px;
-    }
-    
-    .settings-tabs::-webkit-scrollbar-thumb,
-    .file-upload-tabs::-webkit-scrollbar-thumb {
-        background: var(--border-color);
-        border-radius: 2px;
-    }
-    
     .tab-button {
-        white-space: nowrap;
-        flex-shrink: 0;
         padding: 10px 15px;
         font-size: 0.9rem;
     }
