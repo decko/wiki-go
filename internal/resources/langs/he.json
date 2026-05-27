@@ -162,6 +162,7 @@
   "login.ban": "יותר מדי ניסיונות התחברות כושלים; נסה שוב מאוחר יותר",
   "login.retry_in": "נסה שוב בעוד",
   "login.logging_in": "מתחבר...",
+  "login.private_notice": "ויקי זה פרטי ודורש אימות כדי לצפות בתוכן.",
 
   "new_doc.title": "יצירת מסמך חדש",
   "new_doc.document_title": "כותרת מסמך",

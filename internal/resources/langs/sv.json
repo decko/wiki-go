@@ -162,6 +162,7 @@
   "login.ban": "För många misslyckade inloggningsförsök; försök igen senare",
   "login.retry_in": "försök igen om",
   "login.logging_in": "Loggar in...",
+  "login.private_notice": "Den här wikin är privat och kräver autentisering för att visa innehåll.",
 
   "new_doc.title": "Skapa nytt dokument",
   "new_doc.document_title": "Dokumenttitel",

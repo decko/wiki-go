@@ -162,6 +162,7 @@
   "login.ban": "登入失敗次數過多；請稍後再試",
   "login.retry_in": "請在此時間後重試",
   "login.logging_in": "登入中...",
+  "login.private_notice": "此 Wiki 為私有，需要驗證身份才能查看內容。",
 
   "new_doc.title": "建立新文件",
   "new_doc.document_title": "文件標題",

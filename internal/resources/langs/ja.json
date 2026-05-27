@@ -162,6 +162,7 @@
   "login.ban": "ログイン失敗が多すぎます。後でもう一度お試しください",
   "login.retry_in": "再試行まで",
   "login.logging_in": "ログイン中...",
+  "login.private_notice": "このWikiはプライベートであり、コンテンツを表示するには認証が必要です。",
 
   "new_doc.title": "新規文書を作成",
   "new_doc.document_title": "文書タイトル",

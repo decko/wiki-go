@@ -162,6 +162,7 @@
   "login.ban": "Demasiados intentos fallidos; intente más tarde",
   "login.retry_in": "reintentar en",
   "login.logging_in": "Iniciando sesión...",
+  "login.private_notice": "Este wiki es privado y requiere autenticación para ver el contenido.",
 
   "new_doc.title": "Crear Nuevo Documento",
   "new_doc.document_title": "Título del Documento",

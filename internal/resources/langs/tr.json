@@ -162,6 +162,7 @@
   "login.ban": "Çok fazla başarısız giriş denemesi; daha sonra tekrar deneyin",
   "login.retry_in": "tekrar deneyin",
   "login.logging_in": "Giriş yapılıyor...",
+  "login.private_notice": "Bu wiki özeldir ve içeriği görüntülemek için kimlik doğrulaması gerektirir.",
 
   "new_doc.title": "Yeni Belge Oluştur",
   "new_doc.document_title": "Belge Başlığı",

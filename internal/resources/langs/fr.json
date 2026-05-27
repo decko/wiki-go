@@ -162,6 +162,7 @@
   "login.ban": "Trop de tentatives de connexion échouées; réessayez plus tard",
   "login.retry_in": "réessayer dans",
   "login.logging_in": "Connexion...",
+  "login.private_notice": "Ce wiki est privé et nécessite une authentification pour consulter le contenu.",
 
   "new_doc.title": "Créer un nouveau document",
   "new_doc.document_title": "Titre du document",

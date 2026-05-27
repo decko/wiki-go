@@ -162,6 +162,7 @@
   "login.ban": "Te veel mislukte inlogpogingen; probeer het later opnieuw",
   "login.retry_in": "probeer opnieuw over",
   "login.logging_in": "Inloggen...",
+  "login.private_notice": "Deze wiki is privé en vereist authenticatie om inhoud te bekijken.",
 
   "new_doc.title": "Nieuw document aanmaken",
   "new_doc.document_title": "Documenttitel",

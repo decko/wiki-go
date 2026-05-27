@@ -162,6 +162,7 @@
   "login.ban": "Zu viele fehlgeschlagene Anmeldeversuche; versuchen Sie es später erneut",
   "login.retry_in": "erneut versuchen in",
   "login.logging_in": "Anmeldung...",
+  "login.private_notice": "Dieses Wiki ist privat und erfordert eine Authentifizierung zum Anzeigen von Inhalten.",
 
   "new_doc.title": "Neues Dokument erstellen",
   "new_doc.document_title": "Dokumenttitel",

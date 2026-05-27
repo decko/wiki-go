@@ -162,6 +162,7 @@
   "login.ban": "Liian monta epäonnistunutta kirjautumisyritystä; yritä myöhemmin uudelleen",
   "login.retry_in": "yritä uudelleen",
   "login.logging_in": "Kirjaudutaan...",
+  "login.private_notice": "Tämä wiki on yksityinen ja vaatii todennuksen sisällön katselemiseksi.",
 
   "new_doc.title": "Luo uusi dokumentti",
   "new_doc.document_title": "Dokumentin otsikko",

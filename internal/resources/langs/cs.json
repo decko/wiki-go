@@ -162,6 +162,7 @@
   "login.ban": "Příliš mnoho neúspěšných přihlášení; zkuste to později",
   "login.retry_in": "zkuste znovu za",
   "login.logging_in": "Přihlašování...",
+  "login.private_notice": "Tato wiki je soukromá a pro zobrazení obsahu vyžaduje přihlášení.",
 
   "new_doc.title": "Vytvořit nový dokument",
   "new_doc.document_title": "Název dokumentu",
