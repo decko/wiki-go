@@ -214,6 +214,18 @@
     flex: 0.6 !important;
 }
 
+@media (max-width: 480px) {
+    .timezone-selector-wrapper {
+        flex-direction: column;
+    }
+
+    .timezone-region-selector,
+    .timezone-selector {
+        flex: 1 !important;
+        min-width: unset;
+    }
+}
+
 .language-selector:hover {
     border-color: var(--primary-hover);
 }
