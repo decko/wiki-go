@@ -170,6 +170,13 @@ func PageHandler(w http.ResponseWriter, r *http.Request, cfg *config.Config) {
 
 		dirName := f.Name()
 		urlPath := filepath.Join(path, dirName)
+		// Normalize to forward slashes for access check
+		urlPath = strings.ReplaceAll(urlPath, "\\", "/")
+
+		// Apply the same access check as the sidebar navigation
+		if !auth.CanAccessDocument(urlPath, session, cfg) {
+			continue
+		}
 
 		// Check if subdirectory has a document.md
 		subDocPath := filepath.Join(fsPath, dirName, "document.md")
