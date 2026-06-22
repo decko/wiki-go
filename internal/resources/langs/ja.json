@@ -69,6 +69,8 @@
   "settings.copyright_notice": "著作権表示",
   "settings.timezone": "タイムゾーン",
   "settings.language_description": "ユーザーインターフェースの言語",
+  "settings.log_level": "ログレベル",
+  "settings.log_level_description": "コンソールに出力するログメッセージを制御します (debug, info, warn, error)",
   "settings.document_versions": "文書バージョン",
   "settings.document_versions_description": "文書ごとに保持するバージョン数。バージョン管理を無効にするには0に設定します。",
   "settings.max_upload_size": "最大アップロードサイズ",

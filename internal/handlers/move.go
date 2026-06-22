@@ -2,13 +2,13 @@ package handlers
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
 	"wiki-go/internal/auth"
 	"wiki-go/internal/config"
+	"wiki-go/internal/logger"
 )
 
 // MoveRequest represents the request to move or rename a document or category
@@ -97,13 +97,13 @@ func MoveDocumentHandler(w http.ResponseWriter, r *http.Request, cfg *config.Con
 	// If we're moving to the root (empty target path) and the source is not already at the root
 	if moveReq.TargetPath == "" && sourceDir != "." {
 		moveToRoot = true
-		log.Printf("Detected move to root operation: %s -> %s", moveReq.SourcePath, moveReq.NewSlug)
+		logger.Debug("Detected move to root operation: %s -> %s", moveReq.SourcePath, moveReq.NewSlug)
 	}
 	
 	// Determine if this is a move operation
 	isMove := moveReq.TargetPath != "" || moveToRoot
 	
-	log.Printf("Operation analysis: sourceBase=%s, sourceDir=%s, moveToRoot=%v", 
+	logger.Debug("Operation analysis: sourceBase=%s, sourceDir=%s, moveToRoot=%v",
 		sourceBase, sourceDir, moveToRoot)
 
 	// Build the full source path
@@ -126,8 +126,8 @@ func MoveDocumentHandler(w http.ResponseWriter, r *http.Request, cfg *config.Con
 	var newPath string
 
 	// Log the request details for debugging
-	log.Printf("Move request: SourcePath=%s, TargetPath=%s, NewSlug=%s", moveReq.SourcePath, moveReq.TargetPath, moveReq.NewSlug)
-	log.Printf("Operation type: isRename=%v, isMove=%v", isRename, isMove)
+	logger.Debug("Move request: SourcePath=%s, TargetPath=%s, NewSlug=%s", moveReq.SourcePath, moveReq.TargetPath, moveReq.NewSlug)
+	logger.Debug("Operation type: isRename=%v, isMove=%v", isRename, isMove)
 
 	if isRename && !isMove {
 		// Rename operation (change slug only)
@@ -167,7 +167,7 @@ func MoveDocumentHandler(w http.ResponseWriter, r *http.Request, cfg *config.Con
 	}
 	
 	// Log the calculated paths
-	log.Printf("Calculated paths: newPath=%s, fullTargetPath=%s", newPath, fullTargetPath)
+	logger.Debug("Calculated paths: newPath=%s, fullTargetPath=%s", newPath, fullTargetPath)
 
 	// Check if target already exists, but only if it's not the same as the source
 	// We need to check if the document.md file exists at the target path
@@ -206,22 +206,23 @@ func MoveDocumentHandler(w http.ResponseWriter, r *http.Request, cfg *config.Con
 		return
 	}
 
-	// Log paths for debugging
-	log.Printf("Moving document from %s to %s", fullSourcePath, fullTargetPath)
-	
 	// Check if source and target are the same
 	if fullSourcePath == fullTargetPath {
-		log.Printf("WARNING: Source and target paths are the same! This will cause an error.")
+		logger.Warn("Source and target paths are the same, aborting move")
 		sendJSONResponse(w, false, "Source and target paths are the same", http.StatusBadRequest, "", "")
 		return
 	}
 	
 	// Move the document or category
 	if err := os.Rename(fullSourcePath, fullTargetPath); err != nil {
-		log.Printf("Error moving document: %v", err)
+		logger.Error("Error moving document: %v", err)
 		sendJSONResponse(w, false, "Failed to move: "+err.Error(), http.StatusInternalServerError, "", "")
 		return
 	}
+
+	logger.Info("User %s moved %s -> %s", session.Username,
+		filepath.Join(cfg.Wiki.RootDir, cfg.Wiki.DocumentsDir, moveReq.SourcePath),
+		filepath.Join(cfg.Wiki.RootDir, cfg.Wiki.DocumentsDir, newPath))
 
 	// Handle versions directory
 	var versionsSourcePath, versionsTargetPath string
@@ -252,11 +253,11 @@ func MoveDocumentHandler(w http.ResponseWriter, r *http.Request, cfg *config.Con
 	if _, err := os.Stat(versionsSourcePath); err == nil {
 		// Create parent directory for versions if needed
 		if err := os.MkdirAll(filepath.Dir(versionsTargetPath), 0755); err != nil {
-			log.Printf("Warning: Failed to create versions target directory: %v", err)
+			logger.Warn("Failed to create versions target directory: %v", err)
 		} else {
 			// Move versions directory
 			if err := os.Rename(versionsSourcePath, versionsTargetPath); err != nil {
-				log.Printf("Warning: Failed to move versions directory: %v", err)
+				logger.Warn("Failed to move versions directory: %v", err)
 			}
 		}
 	}
@@ -269,11 +270,11 @@ func MoveDocumentHandler(w http.ResponseWriter, r *http.Request, cfg *config.Con
 	if _, err := os.Stat(commentsSourcePath); err == nil {
 		// Create parent directory for comments if needed
 		if err := os.MkdirAll(filepath.Dir(commentsTargetPath), 0755); err != nil {
-			log.Printf("Warning: Failed to create comments target directory: %v", err)
+			logger.Warn("Failed to create comments target directory: %v", err)
 		} else {
 			// Move comments directory
 			if err := os.Rename(commentsSourcePath, commentsTargetPath); err != nil {
-				log.Printf("Warning: Failed to move comments directory: %v", err)
+				logger.Warn("Failed to move comments directory: %v", err)
 			}
 		}
 	}

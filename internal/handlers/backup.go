@@ -15,6 +15,7 @@ import (
 
 	"wiki-go/internal/auth"
 	"wiki-go/internal/config"
+	"wiki-go/internal/logger"
 	"wiki-go/internal/utils"
 )
 
@@ -74,7 +75,7 @@ func StartBackupHandler(w http.ResponseWriter, r *http.Request, cfg *config.Conf
 	backupJobsMutex.Unlock()
 
 	// Start backup in background
-	go performBackup(jobID, filename, cfg)
+	go performBackup(jobID, filename, cfg, session.Username)
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{
@@ -83,7 +84,7 @@ func StartBackupHandler(w http.ResponseWriter, r *http.Request, cfg *config.Conf
 	})
 }
 
-func performBackup(jobID, filename string, cfg *config.Config) {
+func performBackup(jobID, filename string, cfg *config.Config, admin string) {
 	updateJob(jobID, func(j *BackupJob) {
 		j.Status = "processing"
 	})
@@ -181,6 +182,7 @@ func performBackup(jobID, filename string, cfg *config.Config) {
 		j.Status = "completed"
 		j.Progress = 100
 	})
+	logger.Info("Admin %s created backup %s", admin, filename)
 }
 
 func updateJob(jobID string, updater func(*BackupJob)) {

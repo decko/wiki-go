@@ -5,7 +5,6 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/hex"
-	"log"
 	"net/http"
 	"net/url"
 	"path/filepath"
@@ -14,6 +13,7 @@ import (
 	"time"
 	"wiki-go/internal/config"
 	"wiki-go/internal/crypto"
+	"wiki-go/internal/logger"
 )
 
 // Session represents a user session
@@ -130,10 +130,10 @@ func CreateSession(w http.ResponseWriter, username string, role string, groups [
 	}
 	if sessionStore != nil {
 		if err := sessionStore.SaveSessions(sessions); err != nil {
-			log.Printf("Error saving sessions in CreateSession: %v", err)
+			logger.Error("Error saving sessions in CreateSession: %v", err)
 		}
 	} else {
-		log.Println("Warning: sessionStore is nil in CreateSession")
+		logger.Warn("sessionStore is nil in CreateSession")
 	}
 	mu.Unlock()
 
@@ -207,11 +207,11 @@ func ClearSession(w http.ResponseWriter, r *http.Request, cfg *config.Config) {
 		delete(sessions, hashedToken)
 		if sessionStore != nil {
 			if err := sessionStore.SaveSessions(sessions); err != nil {
-				log.Printf("Error saving sessions in ClearSession: %v", err)
+				logger.Error("Error saving sessions in ClearSession: %v", err)
 			}
 		}
 	} else {
-		log.Printf("Warning: Session not found during logout for token hash: %s", hashedToken)
+		logger.Warn("Session not found during logout for token hash: %s", hashedToken)
 	}
 	mu.Unlock()
 
@@ -254,6 +254,13 @@ func CheckAuth(r *http.Request) *Session {
 
 // RequireAuth checks if the user is allowed to access the requested path
 func RequireAuth(r *http.Request, cfg *config.Config) bool {
+	_, allowed := CheckAccess(r, cfg)
+	return allowed
+}
+
+// CheckAccess checks if the user is allowed to access the requested path and
+// returns both the result and the session so callers don't need a second lookup.
+func CheckAccess(r *http.Request, cfg *config.Config) (*Session, bool) {
 	path := r.URL.Path
 
 	// Clean and decode the path to match PageHandler logic
@@ -265,7 +272,7 @@ func RequireAuth(r *http.Request, cfg *config.Config) bool {
 	}
 
 	session := GetSession(r)
-	return CanAccessDocument(path, session, cfg)
+	return session, CanAccessDocument(path, session, cfg)
 }
 
 // RequireRole checks if user has required role or higher

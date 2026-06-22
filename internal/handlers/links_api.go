@@ -3,7 +3,6 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -11,6 +10,7 @@ import (
 	"strings"
 	"time"
 	"wiki-go/internal/frontmatter"
+	"wiki-go/internal/logger"
 	"wiki-go/internal/utils"
 )
 
@@ -526,7 +526,7 @@ func saveDocumentWithVersioning(docPath, relativePath string, content []byte) er
 				_ = os.WriteFile(versionPath, currentContent, 0644)
 
 				// Log the versioning
-				log.Printf("Created version: %s", versionPath)
+				logger.Info("Created version: %s", versionPath)
 
 				// Clean up old versions if needed
 				utils.CleanupOldVersions(versionDir, cfg.Wiki.MaxVersions)

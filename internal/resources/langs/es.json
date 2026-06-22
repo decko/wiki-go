@@ -69,6 +69,8 @@
   "settings.copyright_notice": "Aviso de Copyright",
   "settings.timezone": "Zona Horaria",
   "settings.language_description": "Idioma para la interfaz de usuario",
+  "settings.log_level": "Nivel de registro",
+  "settings.log_level_description": "Controla qué mensajes de registro se escriben en la consola (debug, info, warn, error)",
   "settings.document_versions": "Versiones de documento",
   "settings.document_versions_description": "Número de versiones a mantener por documento. Establecer a 0 para desactivar el versionado.",
   "settings.max_upload_size": "Tamaño máximo de archivo de subida",

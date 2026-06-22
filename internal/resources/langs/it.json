@@ -69,6 +69,8 @@
   "settings.copyright_notice": "Avviso di copyright",
   "settings.timezone": "Fuso orario",
   "settings.language_description": "Lingua per l'interfaccia utente",
+  "settings.log_level": "Livello di log",
+  "settings.log_level_description": "Controlla quali messaggi di log vengono scritti nella console (debug, info, warn, error)",
   "settings.document_versions": "Versioni del documento",
   "settings.document_versions_description": "Numero di versioni da conservare per documento. Impostare a 0 per disabilitare il versionamento.",
   "settings.max_upload_size": "Dimensione Massima File",

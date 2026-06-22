@@ -5,7 +5,9 @@ import (
     "net/http"
     "os"
     "sync"
+    "wiki-go/internal/auth"
     "wiki-go/internal/config"
+    "wiki-go/internal/logger"
 )
 
 var securityMu sync.Mutex
@@ -82,6 +84,13 @@ func handleUpdateSecurity(w http.ResponseWriter, r *http.Request) {
 
     // Reinitialise ban list with new policy
     InitLoginBan(cfg)
+
+    session := auth.GetSession(r)
+    admin := ""
+    if session != nil {
+        admin = session.Username
+    }
+    logger.Info("Admin %s updated security settings", admin)
 
     w.Header().Set("Content-Type", "application/json")
     json.NewEncoder(w).Encode(req)

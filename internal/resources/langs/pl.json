@@ -69,6 +69,8 @@
   "settings.copyright_notice": "Informacja o prawach autorskich",
   "settings.timezone": "Strefa czasowa",
   "settings.language_description": "Język interfejsu użytkownika",
+  "settings.log_level": "Poziom dziennika",
+  "settings.log_level_description": "Określa, które komunikaty dziennika są zapisywane w konsoli (debug, info, warn, error)",
   "settings.document_versions": "Wersje dokumentu",
   "settings.document_versions_description": "Liczba wersji do przechowywania dla każdego dokumentu. Ustaw na 0, aby wyłączyć wersjonowanie.",
   "settings.max_upload_size": "Maksymalny rozmiar pliku",

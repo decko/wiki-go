@@ -1,17 +1,17 @@
 package main
 
 import (
-	"os"
 	"fmt"
 	"flag"
-	"log"
 	"net/http"
+	"os"
 	"path/filepath"
 
 	"wiki-go/internal/auth"
 	"wiki-go/internal/config"
 	"wiki-go/internal/goldext"
 	"wiki-go/internal/handlers"
+	"wiki-go/internal/logger"
 	"wiki-go/internal/migration"
 	"wiki-go/internal/routes"
 	"wiki-go/internal/static"
@@ -27,18 +27,18 @@ func main() {
 	
 	// Fix broken config file if it exists (from previous bug)
 	if err := migration.FixBrokenConfig(config.ConfigFilePath); err != nil {
-		log.Printf("Warning: Failed to fix broken config: %v", err)
+		logger.Warn("Failed to fix broken config: %v", err)
 	}
 
 	// Migrate user roles from old IsAdmin to new role-based system
 	if err := migration.MigrateUserRoles(config.ConfigFilePath); err != nil {
-		log.Fatal("Error migrating user roles:", err)
+		logger.Fatal("Error migrating user roles: %v", err)
 	}
 
 	// Load configuration (after migration)
 	cfg, err := config.LoadConfig(config.ConfigFilePath)
 	if err != nil {
-		log.Fatal("Error loading config:", err)
+		logger.Fatal("Error loading config: %v", err)
 	}
 
 	// Propagate wiki timezone to the goldext shortcode renderer so that
@@ -46,20 +46,23 @@ func main() {
 	// (consistent with formatTime used elsewhere in templates).
 	goldext.SetWikiTimezone(cfg.Wiki.Timezone)
 
+	// Apply log level from config
+	logger.Init(cfg.Wiki.LogLevel)
+
 	// Initialize session store for persistent logins
 	sessionPath := filepath.Join(cfg.Wiki.RootDir, "temp", "sessions.json")
 	if err := auth.InitSessionStore(sessionPath); err != nil {
-		log.Printf("Warning: Failed to initialize session store: %v", err)
+		logger.Warn("Failed to initialize session store: %v", err)
 	}
 
 	// Ensure the homepage exists
 	if err := handlers.EnsureHomepageExists(cfg); err != nil {
-		log.Fatal("Error creating homepage:", err)
+		logger.Fatal("Error creating homepage: %v", err)
 	}
 
 	// Ensure static assets exist in data directory
 	if err := static.EnsureStaticAssetsExist(cfg.Wiki.RootDir); err != nil {
-		log.Fatal("Error copying static assets:", err)
+		logger.Fatal("Error copying static assets: %v", err)
 	}
 
 	// Update handlers with config
@@ -71,14 +74,14 @@ func main() {
 	// Start the server
 	addr := fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port)
 	if cfg.Server.SSL && cfg.Server.SSLCert != "" && cfg.Server.SSLKey != "" {
-		fmt.Printf("HTTPS server starting on %s...\n", addr)
+		logger.Info("HTTPS server starting on %s...", addr)
 		if err := http.ListenAndServeTLS(addr, cfg.Server.SSLCert, cfg.Server.SSLKey, nil); err != nil {
-			log.Fatal(err)
+			logger.Fatal("HTTPS server error: %v", err)
 		}
 	} else {
-		fmt.Printf("HTTP server starting on %s...\n", addr)
+		logger.Info("HTTP server starting on %s...", addr)
 		if err := http.ListenAndServe(addr, nil); err != nil {
-			log.Fatal(err)
+			logger.Fatal("HTTP server error: %v", err)
 		}
 	}
 }

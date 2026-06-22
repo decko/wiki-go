@@ -16,13 +16,10 @@ func CanAccessDocument(path string, session *Session, cfg *config.Config) bool {
 	// Find the first matching rule
 	rule := findMatchingRule(path, cfg.AccessRules)
 
-	// If no rule matches, default behavior depends on wiki privacy
 	if rule == nil {
 		if cfg.Wiki.Private {
-			// If private, only authenticated users can access
 			return session != nil
 		}
-		// If public, everyone can access
 		return true
 	}
 

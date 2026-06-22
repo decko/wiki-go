@@ -3,9 +3,9 @@ package goldext
 import (
 	"encoding/json"
 	"io/fs"
-	"log"
 	"strings"
 
+	"wiki-go/internal/logger"
 	"wiki-go/internal/resources"
 )
 
@@ -29,14 +29,14 @@ func init() {
 	// Read the emoji JSON file
 	emojiFile, err := fs.ReadFile(dataFS, "emojis.json")
 	if err != nil {
-		log.Printf("Error reading emoji file: %v", err)
+		logger.Error("Error reading emoji file: %v", err)
 		return
 	}
 
 	// Parse the JSON data
 	var emojiList []EmojiData
 	if err := json.Unmarshal(emojiFile, &emojiList); err != nil {
-		log.Printf("Error parsing emoji data: %v", err)
+		logger.Error("Error parsing emoji data: %v", err)
 		return
 	}
 
@@ -56,7 +56,7 @@ func init() {
 		}
 	}
 
-	log.Printf("Loaded %d emojis from emojis.json", len(emojis))
+	logger.Debug("Loaded %d emojis from emojis.json", len(emojis))
 }
 
 // EmojiPreprocessor replaces emoji shortcodes with Unicode emoji characters

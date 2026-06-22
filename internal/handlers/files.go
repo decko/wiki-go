@@ -15,6 +15,7 @@ import (
 	"wiki-go/internal/auth"
 	"wiki-go/internal/config"
 	"wiki-go/internal/i18n"
+	"wiki-go/internal/logger"
 	"wiki-go/internal/utils"
 )
 
@@ -990,35 +991,35 @@ func debugFileValidation(fileContent []byte, filename string, detected, expected
 	// }
 
 	ext := strings.ToLower(filepath.Ext(filename))
-	fmt.Printf("File Validation Debug (%s):\n", filename)
-	fmt.Printf("  - Detected MIME: %s\n", detected)
-	fmt.Printf("  - Expected MIME: %s\n", expected)
-	fmt.Printf("  - Content starts with: %x\n", fileContent[:min(16, len(fileContent))])
+	logger.Debug("File Validation Debug (%s):", filename)
+	logger.Debug("  - Detected MIME: %s", detected)
+	logger.Debug("  - Expected MIME: %s", expected)
+	logger.Debug("  - Content starts with: %x", fileContent[:min(16, len(fileContent))])
 
 	// For Office files, try to show ZIP contents
 	if ext == ".docx" || ext == ".xlsx" || ext == ".pptx" {
 		// Check for ZIP signature
 		if len(fileContent) >= 4 && string(fileContent[0:4]) == "PK\x03\x04" {
-			fmt.Println("  - Has valid ZIP signature")
+			logger.Debug("  - Has valid ZIP signature")
 
 			// Try to open as ZIP
 			reader := bytes.NewReader(fileContent)
 			zipReader, err := zip.NewReader(reader, int64(len(fileContent)))
 			if err != nil {
-				fmt.Printf("  - Failed to open as ZIP: %v\n", err)
+				logger.Debug("  - Failed to open as ZIP: %v", err)
 			} else {
-				fmt.Println("  - ZIP contents:")
+				logger.Debug("  - ZIP contents:")
 				for i, f := range zipReader.File {
 					if i < 10 { // Limit to first 10 files
-						fmt.Printf("    * %s\n", f.Name)
+						logger.Debug("    * %s", f.Name)
 					} else if i == 10 {
-						fmt.Println("    * ... (more files)")
+						logger.Debug("    * ... (more files)")
 						break
 					}
 				}
 			}
 		} else {
-			fmt.Println("  - Missing ZIP signature!")
+			logger.Debug("  - Missing ZIP signature!")
 		}
 	}
 }
@@ -1176,7 +1177,7 @@ func RenameFileHandler(w http.ResponseWriter, r *http.Request, cfg *config.Confi
 	}
 
 	// Debug incoming request
-	fmt.Printf("Rename request received - CurrentPath: %s, NewName: %s\n", renameReq.CurrentPath, renameReq.NewName)
+	logger.Debug("Rename request received - CurrentPath: %s, NewName: %s", renameReq.CurrentPath, renameReq.NewName)
 
 	// Clean and normalize the path
 	path := renameReq.CurrentPath
@@ -1190,7 +1191,7 @@ func RenameFileHandler(w http.ResponseWriter, r *http.Request, cfg *config.Confi
 	newPath := filepath.Join(dir, renameReq.NewName)
 
 	// Log paths for debugging
-	fmt.Printf("Path components: path=%s, dir=%s, filename=%s, newPath=%s\n", path, dir, filename, newPath)
+	logger.Debug("Path components: path=%s, dir=%s, filename=%s, newPath=%s", path, dir, filename, newPath)
 
 	// Determine file paths based on two possible locations
 	var currentFilePath, newFilePath string
@@ -1202,7 +1203,7 @@ func RenameFileHandler(w http.ResponseWriter, r *http.Request, cfg *config.Confi
 		currentFilePath = currentDocumentsPath
 		newFilePath = filepath.Join(cfg.Wiki.RootDir, cfg.Wiki.DocumentsDir, newPath)
 		fileFound = true
-		fmt.Printf("File found in documents path: %s\n", currentFilePath)
+		logger.Debug("File found in documents path: %s", currentFilePath)
 	}
 
 	// If not found in documents, try pages directory
@@ -1212,7 +1213,7 @@ func RenameFileHandler(w http.ResponseWriter, r *http.Request, cfg *config.Confi
 			currentFilePath = currentPagesPath
 			newFilePath = filepath.Join(cfg.Wiki.RootDir, newPath)
 			fileFound = true
-			fmt.Printf("File found in pages path: %s\n", currentFilePath)
+			logger.Debug("File found in pages path: %s", currentFilePath)
 		}
 	}
 
@@ -1226,7 +1227,7 @@ func RenameFileHandler(w http.ResponseWriter, r *http.Request, cfg *config.Confi
 		if fileExists(possibleNewPathInDocuments) ||
 		   (strings.HasPrefix(newPath, "pages/") && fileExists(possibleNewPathInPages)) {
 			// The file with the new name already exists, likely was already renamed
-			fmt.Printf("File already appears to have been renamed to: %s\n", newPath)
+			logger.Debug("File already appears to have been renamed to: %s", newPath)
 			w.WriteHeader(http.StatusOK)
 			json.NewEncoder(w).Encode(FileResponse{
 				Success: true,
@@ -1237,7 +1238,7 @@ func RenameFileHandler(w http.ResponseWriter, r *http.Request, cfg *config.Confi
 		}
 
 		// If we get here, the file truly doesn't exist
-		fmt.Printf("Error: File not found in documents or pages path\n")
+		logger.Error("File not found in documents or pages path")
 		w.WriteHeader(http.StatusNotFound)
 		json.NewEncoder(w).Encode(FileResponse{
 			Success: false,
@@ -1247,7 +1248,7 @@ func RenameFileHandler(w http.ResponseWriter, r *http.Request, cfg *config.Confi
 	}
 
 	// Log the full paths for debugging
-	fmt.Printf("Renaming file: %s -> %s\n", currentFilePath, newFilePath)
+	logger.Debug("Renaming file: %s -> %s", currentFilePath, newFilePath)
 
 	// Check if target already exists
 	if _, err := os.Stat(newFilePath); err == nil {
@@ -1262,7 +1263,7 @@ func RenameFileHandler(w http.ResponseWriter, r *http.Request, cfg *config.Confi
 	// Rename the file
 	err := os.Rename(currentFilePath, newFilePath)
 	if err != nil {
-		fmt.Printf("Error renaming file: %v\n", err)
+		logger.Error("Error renaming file: %v", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(FileResponse{
 			Success: false,
@@ -1276,8 +1277,8 @@ func RenameFileHandler(w http.ResponseWriter, r *http.Request, cfg *config.Confi
 	// Replace backslashes with forward slashes for URLs
 	urlPath = strings.ReplaceAll(urlPath, "\\", "/")
 
-	fmt.Printf("File renamed successfully: %s -> %s\n", currentFilePath, newFilePath)
-	fmt.Printf("URL path: %s\n", urlPath)
+	logger.Debug("File renamed successfully: %s -> %s", currentFilePath, newFilePath)
+	logger.Debug("URL path: %s", urlPath)
 
 	// Return success response
 	w.WriteHeader(http.StatusOK)

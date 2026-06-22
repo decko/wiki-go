@@ -12,6 +12,7 @@ import (
 	"wiki-go/internal/auth"
 	"wiki-go/internal/config"
 	"wiki-go/internal/handlers"
+	"wiki-go/internal/logger"
 	"wiki-go/internal/resources"
 )
 
@@ -461,12 +462,18 @@ func SetupRoutes(cfg *config.Config) {
 	// Home page and other pages
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		// Check if authentication is required
-		if !auth.RequireAuth(r, cfg) {
+		session, allowed := auth.CheckAccess(r, cfg)
+		if !allowed {
 			// If private and not authenticated, redirect to login page
 			// Preserve original requested path so that we can jump back after login.
 			target := r.URL.RequestURI()
 			if target == "" {
 				target = "/"
+			}
+			if session == nil {
+				logger.Warn("Access denied for anonymous user on path %s, redirecting to login", r.URL.Path)
+			} else {
+				logger.Warn("Access denied for user %s on path %s", session.Username, r.URL.Path)
 			}
 			q := url.QueryEscape(target)
 			http.Redirect(w, r, "/login?redirect="+q, http.StatusSeeOther)

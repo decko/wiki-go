@@ -3,10 +3,10 @@ package static
 import (
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"path/filepath"
 
+	"wiki-go/internal/logger"
 	"wiki-go/internal/resources"
 )
 
@@ -124,7 +124,7 @@ func EnsureStaticAssetsExist(dataDir string) error {
 			// Open source file from embedded resources
 			srcFile, err := fsys.Open(filename)
 			if err != nil {
-				log.Printf("Warning: Cannot find embedded resource %s: %v", filename, err)
+				logger.Warn("Cannot find embedded resource %s: %v", filename, err)
 				continue
 			}
 			defer srcFile.Close()
@@ -142,7 +142,7 @@ func EnsureStaticAssetsExist(dataDir string) error {
 				return fmt.Errorf("failed to copy file %s: %w", filename, err)
 			}
 
-			log.Printf("Copied default static file to %s", destPath)
+			logger.Info("Copied default static file to %s", destPath)
 		}
 	}
 
@@ -203,7 +203,7 @@ func ensureCustomCSSExists(staticDir string) error {
 		if err != nil {
 			return err
 		}
-		log.Printf("Created default custom.css file at %s", customCSSPath)
+		logger.Info("Created default custom.css file at %s", customCSSPath)
 	}
 
 	return nil
@@ -220,7 +220,7 @@ func ensureCustomJSExists(staticDir string) error {
 		if err != nil {
 			return err
 		}
-		log.Printf("Created default custom.js file at %s", customJSPath)
+		logger.Info("Created default custom.js file at %s", customJSPath)
 	}
 
 	return nil

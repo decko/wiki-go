@@ -3,10 +3,10 @@ package auth
 import (
 	"encoding/json"
 	"io/ioutil"
-	"log"
 	"os"
 	"path/filepath"
 	"sync"
+	"wiki-go/internal/logger"
 )
 
 // SessionStore manages session persistence
@@ -20,7 +20,7 @@ func NewSessionStore(filePath string) *SessionStore {
 	// Ensure directory exists
 	if dir := filepath.Dir(filePath); dir != "" {
 		if err := os.MkdirAll(dir, 0o700); err != nil {
-			log.Printf("Error creating session store directory: %v", err)
+			logger.Error("Error creating session store directory: %v", err)
 		}
 	}
 
@@ -78,7 +78,7 @@ func (s *SessionStore) LoadSessions() (map[string]Session, error) {
 	// Decode JSON
 	if err := json.Unmarshal(data, &sessions); err != nil {
 		// If file is corrupted, return empty map and log error
-		log.Printf("Error decoding session file: %v", err)
+		logger.Error("Error decoding session file: %v", err)
 		return sessions, nil
 	}
 
@@ -111,7 +111,7 @@ func (s *SessionStore) CleanupExpiredSessions(sessions map[string]Session) {
 		tempFile := s.filePath + ".tmp"
 		f, err := os.OpenFile(tempFile, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o600)
 		if err != nil {
-			log.Printf("Error creating temp session file during cleanup: %v", err)
+			logger.Error("Error creating temp session file during cleanup: %v", err)
 			return
 		}
 
@@ -119,14 +119,14 @@ func (s *SessionStore) CleanupExpiredSessions(sessions map[string]Session) {
 		encoder := json.NewEncoder(f)
 		if err := encoder.Encode(sessions); err != nil {
 			f.Close()
-			log.Printf("Error encoding sessions during cleanup: %v", err)
+			logger.Error("Error encoding sessions during cleanup: %v", err)
 			return
 		}
 		f.Close()
 
 		// Rename temporary file to actual file (atomic operation)
 		if err := os.Rename(tempFile, s.filePath); err != nil {
-			log.Printf("Error renaming session file during cleanup: %v", err)
+			logger.Error("Error renaming session file during cleanup: %v", err)
 		}
 	}
 }

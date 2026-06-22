@@ -2,8 +2,8 @@ package migration
 
 import (
 	"bytes"
-	"log"
 	"os"
+	"wiki-go/internal/logger"
 )
 
 // FixBrokenConfig checks for and fixes known configuration file corruption issues.
@@ -26,7 +26,7 @@ func FixBrokenConfig(configPath string) error {
 		return nil
 	}
 
-	log.Println("Detected broken config file (missing format argument). Fixing...")
+	logger.Info("Detected broken config file (missing format argument). Fixing...")
 
 	// Replace the corruption with an empty string
 	// The corruption usually appears after "access_rules:\n", so removing it leaves "access_rules:\n"
@@ -38,6 +38,6 @@ func FixBrokenConfig(configPath string) error {
 		return err
 	}
 
-	log.Println("Config file fixed successfully.")
+	logger.Info("Config file fixed successfully.")
 	return nil
 }

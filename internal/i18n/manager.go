@@ -2,13 +2,13 @@ package i18n
 
 import (
 	"encoding/json"
-	"log"
 	"os"
 	"path/filepath"
 	"regexp"
 	"sort"
 	"sync"
 	"wiki-go/internal/config"
+	"wiki-go/internal/logger"
 )
 
 // Regular expression to match placeholders like {{allowedTypes}}
@@ -61,18 +61,18 @@ func (tm *TranslationManager) LoadTranslations(rootDir string) error {
 
 		data, err := os.ReadFile(filePath)
 		if err != nil {
-			log.Printf("Warning: Failed to read translation file %s: %v", filePath, err)
+			logger.Warn("Failed to read translation file %s: %v", filePath, err)
 			continue
 		}
 
 		var translations map[string]string
 		if err := json.Unmarshal(data, &translations); err != nil {
-			log.Printf("Warning: Failed to parse translation file %s: %v", filePath, err)
+			logger.Warn("Failed to parse translation file %s: %v", filePath, err)
 			continue
 		}
 
 		tm.translations[langCode] = translations
-		log.Printf("Loaded %d translations for language %s", len(translations), langCode)
+		logger.Debug("Loaded %d translations for language %s", len(translations), langCode)
 	}
 
 	return nil
@@ -164,12 +164,12 @@ func Initialize(cfg *config.Config) error {
 
 		// First, copy language files from internal to static directory
 		if err = CopyLangsToStaticDir(cfg.Wiki.RootDir); err != nil {
-			log.Printf("Warning: Failed to copy language files to static directory: %v", err)
+			logger.Warn("Failed to copy language files to static directory: %v", err)
 		}
 
 		// Then, load translations from static directory
 		if err = defaultManager.LoadTranslations(cfg.Wiki.RootDir); err != nil {
-			log.Printf("Warning: Failed to load translations: %v", err)
+			logger.Warn("Failed to load translations: %v", err)
 		}
 	})
 	return err

@@ -69,6 +69,8 @@
   "settings.copyright_notice": "اطلاعیه حق نشر",
   "settings.timezone": "منطقه زمانی",
   "settings.language_description": "زبان برای رابط کاربری",
+  "settings.log_level": "سطح گزارش",
+  "settings.log_level_description": "کنترل می‌کند کدام پیام‌های گزارش در کنسول نوشته شوند (debug, info, warn, error)",
   "settings.document_versions": "نسخه‌های سند",
   "settings.document_versions_description": "تعداد نسخه‌هایی که برای هر سند نگهداری می‌شود. برای غیرفعال کردن نسخه‌بندی، آن را روی 0 تنظیم کنید.",
   "settings.max_upload_size": "حداکثر اندازه فایل آپلود",

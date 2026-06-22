@@ -3,18 +3,18 @@ package handlers
 import (
 	"encoding/json"
 	"html/template"
-	"log"
-	"net/http"
 	"net"
+	"net/http"
 	"path/filepath"
 	"strconv"
 	"strings"
 	"wiki-go/internal/auth"
-	"wiki-go/internal/config"
 	"wiki-go/internal/ban"
+	"wiki-go/internal/config"
 	"wiki-go/internal/crypto"
-	"wiki-go/internal/resources"
 	"wiki-go/internal/i18n"
+	"wiki-go/internal/logger"
+	"wiki-go/internal/resources"
 	"wiki-go/internal/roles"
 	"wiki-go/internal/version"
 )
@@ -76,6 +76,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	// If IP is currently banned, short-circuit before doing any work.
 	if loginBan != nil {
 		if remaining := loginBan.IsBanned(ip); remaining > 0 {
+			logger.Warn("Login attempt from banned IP %s (retry in %ds)", ip, int(remaining.Seconds()))
 			w.Header().Set("Retry-After", strconv.Itoa(int(remaining.Seconds())))
 			w.WriteHeader(http.StatusTooManyRequests)
 			json.NewEncoder(w).Encode(map[string]interface{}{
@@ -92,6 +93,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	if !valid {
 		if loginBan != nil {
 			if dur, bannedNow := loginBan.RegisterFailure(ip); bannedNow {
+				logger.Warn("IP %s banned after too many failed login attempts (ban duration: %ds)", ip, int(dur.Seconds()))
 				// Immediately inform client of new ban
 				w.Header().Set("Retry-After", strconv.Itoa(int(dur.Seconds())))
 				w.WriteHeader(http.StatusTooManyRequests)
@@ -103,6 +105,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		}
+		logger.Warn("Login failed for user %s from %s", req.Username, ip)
 		w.WriteHeader(http.StatusUnauthorized)
 		json.NewEncoder(w).Encode(map[string]interface{}{
 			"success": false,
@@ -125,6 +128,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	logger.Info("User %s logged in from %s", req.Username, ip)
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"success": true,
@@ -159,6 +163,10 @@ func CheckAuthHandler(w http.ResponseWriter, r *http.Request) {
 func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
+	session := auth.GetSession(r)
+	if session != nil {
+		logger.Info("User %s logged out", session.Username)
+	}
 	auth.ClearSession(w, r, cfg)
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]interface{}{
@@ -215,7 +223,7 @@ func LoginPageHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		// Since we've already started writing the response, we can't use http.Error here
 		// But we can log the error
-		log.Printf("Error rendering login template: %v", err)
+		logger.Error("Error rendering login template: %v", err)
 	}
 }
 
@@ -263,7 +271,7 @@ func InitLoginBan(cfg *config.Config) {
 	path := filepath.Join(cfg.Wiki.RootDir, "temp", "login_ban.json")
 	bl, err := ban.NewBanList(path)
 	if err != nil {
-		log.Printf("Warning: failed to initialise login ban list: %v", err)
+		logger.Warn("Failed to initialise login ban list: %v", err)
 	} else {
 		loginBan = bl
 	}

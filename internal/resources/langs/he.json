@@ -69,6 +69,8 @@
   "settings.copyright_notice": "הודעת זכויות יוצרים",
   "settings.timezone": "אזור זמן",
   "settings.language_description": "שפה עבור ממשק המשתמש",
+  "settings.log_level": "רמת רישום",
+  "settings.log_level_description": "קובע אילו הודעות נכתבות לקונסולה (debug, info, warn, error)",
   "settings.document_versions": "גרסאות מסמך",
   "settings.document_versions_description": "מספר הגרסאות לשמור לכל מסמך. הגדר ל-0 כדי להשבית ניהול גרסאות.",
   "settings.max_upload_size": "גודל העלאה מרבי",

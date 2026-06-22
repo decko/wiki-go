@@ -69,6 +69,8 @@
   "settings.copyright_notice": "版權聲明",
   "settings.timezone": "時區",
   "settings.language_description": "使用者介面語言",
+  "settings.log_level": "日誌級別",
+  "settings.log_level_description": "控制將哪些日誌訊息寫入主控台 (debug, info, warn, error)",
   "settings.document_versions": "文件版本",
   "settings.document_versions_description": "每個文件保留的版本數量。設置為0以停用版本控制。",
   "settings.max_upload_size": "最大檔案上傳大小",

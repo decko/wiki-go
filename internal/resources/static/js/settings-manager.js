@@ -265,7 +265,8 @@ document.addEventListener('DOMContentLoaded', function() {
             always_open_children_in_sidebar: document.getElementById('wikiAlwaysOpenChildrenInSidebar').checked,
             max_versions: parseInt(document.getElementById('wikiMaxVersions').value, 10) || 0,
             max_upload_size: parseInt(document.getElementById('wikiMaxUploadSize').value, 10) || 20,
-            language: document.getElementById('wikiLanguage').value
+            language: document.getElementById('wikiLanguage').value,
+            log_level: document.getElementById('wikiLogLevel').value
         };
 
         // Validate
@@ -418,6 +419,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('wikiNotice').value = settings.notice || '';
             setTimezoneValue(settings.timezone || '');
             document.getElementById('wikiLanguage').value = settings.language || 'en';
+            document.getElementById('wikiLogLevel').value = settings.log_level || 'info';
 
             // Populate content form fields
             document.getElementById('wikiPrivate').checked = settings.private || false;

@@ -69,6 +69,8 @@
   "settings.copyright_notice": "Auteursrechtvermelding",
   "settings.timezone": "Tijdzone",
   "settings.language_description": "Taal voor de gebruikersinterface",
+  "settings.log_level": "Logniveau",
+  "settings.log_level_description": "Bepaalt welke logberichten naar de console worden geschreven (debug, info, warn, error)",
   "settings.document_versions": "Documentversies",
   "settings.document_versions_description": "Aantal versies dat per document bewaard moet worden. Stel in op 0 om versiebeheer uit te schakelen.",
   "settings.max_upload_size": "Maximale bestandsgrootte voor uploads",

@@ -15,6 +15,7 @@ import (
 	"time"
 	"wiki-go/internal/auth"
 	"wiki-go/internal/config"
+	"wiki-go/internal/logger"
 )
 
 // ImportResponse represents the response for the import API
@@ -137,7 +138,7 @@ func ImportHandler(w http.ResponseWriter, r *http.Request, cfg *config.Config) {
 	importJobsMutex.Unlock()
 
 	// Start the import process in a goroutine
-	go processImportFromBytes(fileBytes, jobID, cfg)
+	go processImportFromBytes(fileBytes, jobID, cfg, session.Username)
 
 	// Return success response with job ID
 	w.WriteHeader(http.StatusOK)
@@ -199,7 +200,7 @@ func ImportStatusHandler(w http.ResponseWriter, r *http.Request, cfg *config.Con
 }
 
 // processImportFromBytes processes the import of documents from ZIP file bytes
-func processImportFromBytes(zipFileBytes []byte, jobID string, cfg *config.Config) {
+func processImportFromBytes(zipFileBytes []byte, jobID string, cfg *config.Config, admin string) {
 	// Create a reader from the bytes
 	zipReader, err := zip.NewReader(bytes.NewReader(zipFileBytes), int64(len(zipFileBytes)))
 	if err != nil {
@@ -263,10 +264,13 @@ func processImportFromBytes(zipFileBytes []byte, jobID string, cfg *config.Confi
 
 	if status.ErrorCount == 0 {
 		updateImportStatus(jobID, "completed", 100, "", "Import completed successfully.")
+		logger.Info("Admin %s imported %d documents successfully", admin, status.SuccessCount)
 	} else if status.SuccessCount == 0 {
 		updateImportStatus(jobID, "failed", 100, "", "Import failed. No files were imported successfully.")
+		logger.Warn("Admin %s import failed: no files imported", admin)
 	} else {
 		updateImportStatus(jobID, "completed", 100, "", fmt.Sprintf("Import completed with %d errors.", status.ErrorCount))
+		logger.Info("Admin %s imported %d documents (%d errors)", admin, status.SuccessCount, status.ErrorCount)
 	}
 }
 

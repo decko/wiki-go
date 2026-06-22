@@ -10,6 +10,7 @@ import (
 	"regexp"
 	"strings"
 	"time"
+	"wiki-go/internal/logger"
 )
 
 // MetadataRequest represents the request structure for metadata fetching
@@ -124,7 +125,7 @@ func fetchURLMetadata(targetURL string) (*URLMetadata, error) {
 	// Handle gzip decompression if needed
 	var reader io.Reader = resp.Body
 	if resp.Header.Get("Content-Encoding") == "gzip" {
-		fmt.Printf("DEBUG: Response is gzipped, decompressing...\n")
+		logger.Debug("Response is gzipped, decompressing...")
 		gzipReader, err := gzip.NewReader(resp.Body)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create gzip reader: %v", err)

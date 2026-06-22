@@ -69,6 +69,8 @@
   "settings.copyright_notice": "Уведомление об авторских правах",
   "settings.timezone": "Часовой пояс",
   "settings.language_description": "Язык пользовательского интерфейса",
+  "settings.log_level": "Уровень журнала",
+  "settings.log_level_description": "Определяет, какие сообщения журнала записываются в консоль (debug, info, warn, error)",
   "settings.document_versions": "Версии документа",
   "settings.document_versions_description": "Количество версий для хранения для каждого документа. Установите 0, чтобы отключить версионирование.",
   "settings.max_upload_size": "Максимальный размер загружаемого файла",

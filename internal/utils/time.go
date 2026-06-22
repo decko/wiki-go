@@ -1,9 +1,9 @@
 package utils
 
 import (
-	"log"
 	"time"
 	_ "time/tzdata"
+	"wiki-go/internal/logger"
 )
 
 // FormatTimeInTimezone formats a time.Time value using the specified timezone
@@ -11,7 +11,7 @@ import (
 func FormatTimeInTimezone(t time.Time, timezone string, format string) string {
 	loc, err := time.LoadLocation(timezone)
 	if err != nil {
-		log.Printf("Error loading timezone %s: %v, falling back to UTC", timezone, err)
+		logger.Warn("Error loading timezone %s: %v, falling back to UTC", timezone, err)
 		loc = time.UTC
 	}
 

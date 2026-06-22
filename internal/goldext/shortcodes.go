@@ -3,7 +3,6 @@ package goldext
 import (
 	"bufio"
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -12,6 +11,7 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"wiki-go/internal/logger"
 )
 
 // wikiLocation is the resolved *time.Location for the configured wiki
@@ -36,7 +36,7 @@ func SetWikiTimezone(tz string) {
 	}
 	loc, err := time.LoadLocation(tz)
 	if err != nil {
-		log.Printf("goldext: invalid wiki timezone %q: %v, falling back to UTC", tz, err)
+		logger.Warn("goldext: invalid wiki timezone %q: %v, falling back to UTC", tz, err)
 		wikiLocation = nil
 		return
 	}

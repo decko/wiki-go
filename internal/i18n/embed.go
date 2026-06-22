@@ -2,10 +2,10 @@ package i18n
 
 import (
 	"io/fs"
-	"log"
 	"os"
 	"path/filepath"
 
+	"wiki-go/internal/logger"
 	"wiki-go/internal/resources"
 )
 
@@ -27,7 +27,7 @@ func CopyLangsToStaticDir(rootDir string) error {
 	entries, err := fs.ReadDir(langFS, ".")
 	if err != nil {
 		// Fallback to direct filesystem access (for development)
-		log.Printf("Warning: Embedded language files not available, trying filesystem: %v", err)
+		logger.Warn("Embedded language files not available, trying filesystem: %v", err)
 		return copyFromFilesystem(staticLangsDir)
 	}
 
@@ -46,7 +46,7 @@ func CopyLangsToStaticDir(rootDir string) error {
 		// Read embedded file
 		fileData, err := fs.ReadFile(langFS, fileName)
 		if err != nil {
-			log.Printf("Warning: Failed to read embedded language file %s: %v", fileName, err)
+			logger.Warn("Failed to read embedded language file %s: %v", fileName, err)
 			continue
 		}
 
@@ -55,11 +55,11 @@ func CopyLangsToStaticDir(rootDir string) error {
 
 		// Always overwrite existing files to ensure updates are applied
 		if err := os.WriteFile(targetPath, fileData, 0644); err != nil {
-			log.Printf("Warning: Failed to write language file %s: %v", targetPath, err)
+			logger.Warn("Failed to write language file %s: %v", targetPath, err)
 			continue
 		}
 
-		log.Printf("Copied language file %s to %s", fileName, targetPath)
+		logger.Debug("Copied language file %s to %s", fileName, targetPath)
 	}
 
 	return nil
@@ -81,7 +81,7 @@ func copyFromFilesystem(staticLangsDir string) error {
 	foundPath := false
 
 	for _, path := range possiblePaths {
-		log.Printf("Trying to find language files in: %s", path)
+		logger.Debug("Trying to find language files in: %s", path)
 		entries, readErr = os.ReadDir(path)
 		if readErr == nil && len(entries) > 0 {
 			// Make sure there are actual JSON files in the directory
@@ -89,7 +89,7 @@ func copyFromFilesystem(staticLangsDir string) error {
 				if !entry.IsDir() && filepath.Ext(entry.Name()) == ".json" {
 					sourceLangsDir = path
 					foundPath = true
-					log.Printf("Found language files in: %s", path)
+					logger.Debug("Found language files in: %s", path)
 					break
 				}
 			}
@@ -119,7 +119,7 @@ func copyFromFilesystem(staticLangsDir string) error {
 		sourcePath := filepath.Join(sourceLangsDir, fileName)
 		fileData, err := os.ReadFile(sourcePath)
 		if err != nil {
-			log.Printf("Warning: Failed to read language file %s: %v", fileName, err)
+			logger.Warn("Failed to read language file %s: %v", fileName, err)
 			continue
 		}
 
@@ -128,11 +128,11 @@ func copyFromFilesystem(staticLangsDir string) error {
 
 		// Always overwrite existing files to ensure updates are applied
 		if err := os.WriteFile(targetPath, fileData, 0644); err != nil {
-			log.Printf("Warning: Failed to write language file %s: %v", targetPath, err)
+			logger.Warn("Failed to write language file %s: %v", targetPath, err)
 			continue
 		}
 
-		log.Printf("Copied language file %s to %s", fileName, targetPath)
+		logger.Debug("Copied language file %s to %s", fileName, targetPath)
 	}
 
 	return nil

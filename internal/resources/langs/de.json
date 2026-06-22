@@ -69,6 +69,8 @@
   "settings.copyright_notice": "Urheberrechtshinweis",
   "settings.timezone": "Zeitzone",
   "settings.language_description": "Sprache für die Benutzeroberfläche",
+  "settings.log_level": "Protokollebene",
+  "settings.log_level_description": "Bestimmt, welche Protokollmeldungen in die Konsole geschrieben werden (debug, info, warn, error)",
   "settings.document_versions": "Dokumentversionen",
   "settings.document_versions_description": "Anzahl der zu speichernden Versionen pro Dokument. Auf 0 setzen, um die Versionierung zu deaktivieren.",
   "settings.max_upload_size": "Maximale Dateigröße",

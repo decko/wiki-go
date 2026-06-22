@@ -69,6 +69,8 @@
   "settings.copyright_notice": "Upphovsrättsmeddelande",
   "settings.timezone": "Tidszon",
   "settings.language_description": "Språk för användargränssnittet",
+  "settings.log_level": "Loggnivå",
+  "settings.log_level_description": "Styr vilka loggmeddelanden som skrivs till konsolen (debug, info, warn, error)",
   "settings.document_versions": "Dokumentversioner",
   "settings.document_versions_description": "Antal versioner att behålla per dokument. Ställ in som 0 för att inaktivera versionshantering.",
   "settings.max_upload_size": "Maximal filuppladdningsstorlek",

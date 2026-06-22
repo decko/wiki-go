@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -12,6 +11,7 @@ import (
 	"time"
 	"wiki-go/internal/auth"
 	"wiki-go/internal/i18n"
+	"wiki-go/internal/logger"
 	"wiki-go/internal/roles"
 	"wiki-go/internal/utils"
 )
@@ -154,7 +154,7 @@ func SaveHandler(w http.ResponseWriter, r *http.Request) {
 		path = strings.ReplaceAll(path, "\\", "/")
 
 		// Save relative path for versioning
-		relativePath = "documents/" + path
+		relativePath = "documents/" + strings.TrimPrefix(path, "/")
 
 		// Get the full filesystem path, adding the documents subdirectory
 		docPath = filepath.Join(cfg.Wiki.RootDir, cfg.Wiki.DocumentsDir, path, "document.md")
@@ -193,7 +193,7 @@ func SaveHandler(w http.ResponseWriter, r *http.Request) {
 				_ = os.WriteFile(versionPath, currentContent, 0644) // Ignore error for now
 
 				// Log the versioning
-				log.Printf("Created version: %s", versionPath)
+				logger.Info("Created version: %s", versionPath)
 
 				// Clean up old versions if needed
 				utils.CleanupOldVersions(versionDir, cfg.Wiki.MaxVersions)
@@ -221,6 +221,8 @@ func SaveHandler(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
+
+	logger.Info("User %s edited document %s", session.Username, filepath.Join(cfg.Wiki.RootDir, relativePath))
 
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]interface{}{
@@ -293,25 +295,25 @@ func CreateDocumentHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Printf("Creating document: Title=%s, Path=%s, CleanPath=%s", req.Title, req.Path, cleanPath)
+	logger.Debug("Creating document: Title=%s, Path=%s, CleanPath=%s", req.Title, req.Path, cleanPath)
 
 	// Get the config from the package variable
 	// cfg is defined in handlers.go and initialized by InitHandlers
 
 	// Log the paths for debugging
-	log.Printf("Creating document: Title=%s, Path=%s, CleanPath=%s", req.Title, req.Path, cleanPath)
+	logger.Debug("Creating document: Title=%s, Path=%s, CleanPath=%s", req.Title, req.Path, cleanPath)
 
 	// Build the file path
 	documentDir := filepath.Join(cfg.Wiki.RootDir, cfg.Wiki.DocumentsDir)
 	fullPath := filepath.Join(documentDir, cleanPath)
 
 	// Log the full path
-	log.Printf("Full path: %s", fullPath)
+	logger.Debug("Full path: %s", fullPath)
 
 	// Create the directory if it doesn't exist
 	err := os.MkdirAll(fullPath, 0755)
 	if err != nil {
-		log.Printf("Error creating directories: %v", err)
+		logger.Error("Error creating directories: %v", err)
 		sendJSONError(w, "Failed to create directories", http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -348,10 +350,12 @@ func CreateDocumentHandler(w http.ResponseWriter, r *http.Request) {
 	// Write to the file
 	err = os.WriteFile(docFile, []byte(content), 0644)
 	if err != nil {
-		log.Printf("Error creating document: %v", err)
+		logger.Error("Error creating document: %v", err)
 		sendJSONError(w, "Failed to create document", http.StatusInternalServerError, err.Error())
 		return
 	}
+
+	logger.Info("User %s created document %s", session.Username, filepath.Join(cfg.Wiki.RootDir, cfg.Wiki.DocumentsDir, cleanPath))
 
 	// Return success
 	w.Header().Set("Content-Type", "application/json")
@@ -379,7 +383,7 @@ func sendJSONError(w http.ResponseWriter, message string, statusCode int, errorD
 	}
 
 	json.NewEncoder(w).Encode(response)
-	log.Printf("Error response: %s (%d) - %s", message, statusCode, errorDetails)
+	logger.Error("Error response: %s (%d) - %s", message, statusCode, errorDetails)
 }
 
 // DocumentHandler is a combined handler for document operations (GET, DELETE)
@@ -468,14 +472,14 @@ func DeleteDocumentHandler(w http.ResponseWriter, r *http.Request) {
 			sendJSONError(w, "Error deleting directory", http.StatusInternalServerError, err.Error())
 			return
 		}
-		log.Printf("Recursively deleted directory: %s", fullPath)
+		logger.Info("User %s deleted document %s", session.Username, filepath.Join(cfg.Wiki.RootDir, cfg.Wiki.DocumentsDir, docPath))
 	} else {
 		// Delete the file
 		if err := os.Remove(fullPath); err != nil {
 			sendJSONError(w, "Error deleting document", http.StatusInternalServerError, err.Error())
 			return
 		}
-		log.Printf("Deleted file: %s", fullPath)
+		logger.Info("User %s deleted document %s", session.Username, filepath.Join(cfg.Wiki.RootDir, cfg.Wiki.DocumentsDir, docPath))
 	}
 
 	// Also delete the corresponding versions directory
@@ -498,10 +502,10 @@ func DeleteDocumentHandler(w http.ResponseWriter, r *http.Request) {
 	// Check if versions directory exists before attempting to delete
 	if _, err := os.Stat(versionsPath); err == nil {
 		if err := os.RemoveAll(versionsPath); err != nil {
-			log.Printf("Warning: Failed to delete versions directory: %s - %v", versionsPath, err)
+			logger.Warn("Failed to delete versions directory: %s - %v", versionsPath, err)
 			// Continue execution even if versions deletion fails
 		} else {
-			log.Printf("Deleted versions directory: %s", versionsPath)
+			logger.Info("Deleted versions directory: %s", versionsPath)
 		}
 	}
 
@@ -511,10 +515,10 @@ func DeleteDocumentHandler(w http.ResponseWriter, r *http.Request) {
 	// Check if comments directory exists before attempting to delete
 	if _, err := os.Stat(commentsPath); err == nil {
 		if err := os.RemoveAll(commentsPath); err != nil {
-			log.Printf("Warning: Failed to delete comments directory: %s - %v", commentsPath, err)
+			logger.Warn("Failed to delete comments directory: %s - %v", commentsPath, err)
 			// Continue execution even if comments deletion fails
 		} else {
-			log.Printf("Deleted comments directory: %s", commentsPath)
+			logger.Info("Deleted comments directory: %s", commentsPath)
 		}
 	}
 

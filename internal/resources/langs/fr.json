@@ -69,6 +69,8 @@
   "settings.copyright_notice": "Avis de droit d'auteur",
   "settings.timezone": "Fuseau horaire",
   "settings.language_description": "Langue pour l'interface utilisateur",
+  "settings.log_level": "Niveau de journalisation",
+  "settings.log_level_description": "Contrôle les messages de journal écrits dans la console (debug, info, warn, error)",
   "settings.document_versions": "Versions de document",
   "settings.document_versions_description": "Nombre de versions à conserver par document. Définir à 0 pour désactiver le versionnement.",
   "settings.max_upload_size": "Taille maximale des fichiers",

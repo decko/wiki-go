@@ -3,7 +3,6 @@ package handlers
 import (
 	"fmt"
 	"html/template"
-	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -11,11 +10,12 @@ import (
 	"strings"
 	"time"
 
+	"wiki-go/internal/auth"
 	"wiki-go/internal/config"
 	"wiki-go/internal/i18n"
+	"wiki-go/internal/logger"
 	"wiki-go/internal/types"
 	"wiki-go/internal/utils"
-	"wiki-go/internal/auth"
 )
 
 // Default homepage content
@@ -474,7 +474,7 @@ func EnsureHomepageExists(cfg *config.Config) error {
 		if err := os.WriteFile(homepagePath, []byte(defaultHomepageContent), 0644); err != nil {
 			return fmt.Errorf("failed to create homepage file: %w", err)
 		}
-		fmt.Println("Created default homepage at", homepagePath)
+		logger.Info("Created default homepage at %s", homepagePath)
 	}
 
 	return nil
@@ -528,7 +528,7 @@ func HomeHandler(w http.ResponseWriter, r *http.Request, cfg *config.Config) {
 	// Get navigation items
 	nav, err := utils.BuildNavigation(cfg.Wiki.RootDir, cfg.Wiki.DocumentsDir)
 	if err != nil {
-		log.Printf("Error building navigation: %v", err)
+		logger.Error("Error building navigation: %v", err)
 		http.Error(w, "Failed to build navigation", http.StatusInternalServerError)
 		return
 	}
@@ -548,7 +548,7 @@ func HomeHandler(w http.ResponseWriter, r *http.Request, cfg *config.Config) {
 	// we display the most up-to-date version
 	content, err := os.ReadFile(homepagePath)
 	if err != nil {
-		log.Printf("Error reading homepage: %v", err)
+		logger.Error("Error reading homepage: %v", err)
 		// Fallback to a simple default if there's an error
 		content = []byte("# Welcome to LeoMoon Wiki-Go\n\nThis is your homepage.")
 	}

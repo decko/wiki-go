@@ -9,7 +9,9 @@ import (
 	"sort"
 	"strings"
 	"time"
+	"wiki-go/internal/auth"
 	"wiki-go/internal/config"
+	"wiki-go/internal/logger"
 	"wiki-go/internal/utils"
 )
 
@@ -49,7 +51,7 @@ func VersionsHandler(w http.ResponseWriter, r *http.Request, cfg *config.Config)
 	// Set JSON content type header
 	w.Header().Set("Content-Type", "application/json")
 
-	fmt.Printf("Version handler request: %s %s\n", r.Method, r.URL.Path)
+	logger.Debug("Version handler request: %s %s", r.Method, r.URL.Path)
 
 	// Extract the path from the URL
 	// URL format: /api/versions/{document-path} or /api/versions/{document-path}/{version-timestamp}
@@ -68,7 +70,7 @@ func VersionsHandler(w http.ResponseWriter, r *http.Request, cfg *config.Config)
 		return
 	}
 
-	fmt.Printf("Processing version request for document path: %s\n", docPath)
+	logger.Debug("Processing version request for document path: %s", docPath)
 
 	// Check for restore action first
 	if strings.HasSuffix(r.URL.Path, "/restore") && r.Method == "POST" {
@@ -241,8 +243,7 @@ func handleVersionRestore(w http.ResponseWriter, r *http.Request, cfg *config.Co
 	w.Header().Set("Pragma", "no-cache")
 	w.Header().Set("Expires", "0")
 
-	// Debug logging
-	fmt.Printf("Restore request: docPath=%s, timestamp=%s\n", docPath, timestamp)
+	logger.Debug("Restore request: docPath=%s, timestamp=%s", docPath, timestamp)
 
 	// Adjust the path for the new versioning structure
 	var versionFilePath string
@@ -266,8 +267,8 @@ func handleVersionRestore(w http.ResponseWriter, r *http.Request, cfg *config.Co
 		versionRelativePath = "documents/" + docPath
 	}
 
-	fmt.Printf("Version file path: %s\n", versionFilePath)
-	fmt.Printf("Document path for restore: %s\n", documentPath)
+	logger.Debug("Version file path: %s", versionFilePath)
+	logger.Debug("Document path for restore: %s", documentPath)
 
 	// Check if version file exists
 	if _, err := os.Stat(versionFilePath); os.IsNotExist(err) {
@@ -278,7 +279,7 @@ func handleVersionRestore(w http.ResponseWriter, r *http.Request, cfg *config.Co
 	// Ensure the document directory exists
 	docDir := filepath.Dir(documentPath)
 	if err := os.MkdirAll(docDir, 0755); err != nil {
-		fmt.Printf("Error creating directory: %v\n", err)
+		logger.Error("Error creating directory: %v", err)
 		sendJSONErrorVersion(w, "Failed to ensure document directory exists", http.StatusInternalServerError)
 		return
 	}
@@ -286,7 +287,7 @@ func handleVersionRestore(w http.ResponseWriter, r *http.Request, cfg *config.Co
 	// Read the version file content
 	versionContent, err := os.ReadFile(versionFilePath)
 	if err != nil {
-		fmt.Printf("Error reading version file: %v\n", err)
+		logger.Error("Error reading version file: %v", err)
 		sendJSONErrorVersion(w, "Failed to read version file", http.StatusInternalServerError)
 		return
 	}
@@ -318,7 +319,7 @@ func handleVersionRestore(w http.ResponseWriter, r *http.Request, cfg *config.Co
 
 	// Write the version content to the document file
 	if err := os.WriteFile(documentPath, versionContent, 0644); err != nil {
-		fmt.Printf("Error writing to document file: %v\n", err)
+		logger.Error("Error writing to document file: %v", err)
 		sendJSONErrorVersion(w, "Failed to restore document", http.StatusInternalServerError)
 		return
 	}
@@ -326,11 +327,16 @@ func handleVersionRestore(w http.ResponseWriter, r *http.Request, cfg *config.Co
 	// Force update the file's modification time to ensure cache invalidation
 	now := time.Now()
 	if err := os.Chtimes(documentPath, now, now); err != nil {
-		fmt.Printf("Warning: couldn't update file timestamp: %v\n", err)
+		logger.Warn("Couldn't update file timestamp: %v", err)
 		// Continue anyway, not critical
 	}
 
-	fmt.Printf("Successfully restored version %s to document %s\n", timestamp, documentPath)
+	session := auth.GetSession(r)
+	user := "unknown"
+	if session != nil {
+		user = session.Username
+	}
+	logger.Info("User %s restored version %s of %s", user, timestamp, documentPath)
 
 	// Return success response
 	response := map[string]interface{}{

@@ -74,6 +74,7 @@ type Config struct {
 		MaxVersions                 int    `yaml:"max_versions"`
 		MaxUploadSize               int    `yaml:"max_upload_size"` // Maximum upload file size in MB
 		Language                    string `yaml:"language"`        // Default language for the wiki
+		LogLevel                    string `yaml:"log_level"`       // Log level: debug, info, warn, error
 	} `yaml:"wiki"`
 	Users       []User       `yaml:"users"`
 	AccessRules []AccessRule `yaml:"access_rules,omitempty"`
@@ -115,6 +116,7 @@ func LoadConfig(path string) (*Config, error) {
 	config.Wiki.MaxVersions = 10   // Default value
 	config.Wiki.MaxUploadSize = 10 // Default value
 	config.Wiki.Language = "en"    // Default to English
+	config.Wiki.LogLevel = "info"  // Default log level
 	config.Users = []User{}        // Initialize empty users array
 
 	// Security defaults
@@ -191,6 +193,7 @@ func LoadConfig(path string) (*Config, error) {
 				config.Wiki.MaxVersions,
 				config.Wiki.MaxUploadSize,
 				config.Wiki.Language,
+				config.Wiki.LogLevel,
 				config.Security.PasswordStrength,
 				config.Security.LoginBan.Enabled,
 				config.Security.LoginBan.MaxFailures,
@@ -265,6 +268,8 @@ wiki:
     max_upload_size: %d
     # Default language for the wiki interface (en, es, etc.)
     language: "%s"
+    # Log level: debug, info, warn, error
+    log_level: "%s"
 security:
     # cost factor for bcrypt password hashing
     passwordstrength: %d
@@ -356,6 +361,7 @@ func SaveConfig(cfg *Config, w io.Writer) error {
 		cfg.Wiki.MaxVersions,
 		cfg.Wiki.MaxUploadSize,
 		cfg.Wiki.Language,
+		cfg.Wiki.LogLevel,
 		cfg.Security.PasswordStrength,
 		cfg.Security.LoginBan.Enabled,
 		cfg.Security.LoginBan.MaxFailures,

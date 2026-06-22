@@ -7,6 +7,7 @@ import (
 	"strings"
 	"wiki-go/internal/auth"
 	"wiki-go/internal/config"
+	"wiki-go/internal/logger"
 )
 
 // AccessRulesHandler handles requests for access rules
@@ -107,6 +108,13 @@ func CreateAccessRuleHandler(w http.ResponseWriter, r *http.Request) {
 	// Update global config
 	*cfg = updatedConfig
 
+	session := auth.GetSession(r)
+	admin := ""
+	if session != nil {
+		admin = session.Username
+	}
+	logger.Info("Admin %s created access rule for path %s", admin, rule.Pattern)
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(map[string]interface{}{
@@ -157,6 +165,13 @@ func UpdateAccessRuleHandler(w http.ResponseWriter, r *http.Request, index int) 
 	// Update global config
 	*cfg = updatedConfig
 
+	session := auth.GetSession(r)
+	admin := ""
+	if session != nil {
+		admin = session.Username
+	}
+	logger.Info("Admin %s updated access rule for path %s", admin, rule.Pattern)
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"success": true,
@@ -186,6 +201,13 @@ func DeleteAccessRuleHandler(w http.ResponseWriter, r *http.Request, index int) 
 
 	// Update global config
 	*cfg = updatedConfig
+
+	session := auth.GetSession(r)
+	admin := ""
+	if session != nil {
+		admin = session.Username
+	}
+	logger.Info("Admin %s deleted access rule at index %d", admin, index)
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{

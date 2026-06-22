@@ -13,10 +13,10 @@ import (
 	"wiki-go/internal/auth"
 	"wiki-go/internal/comments"
 	"wiki-go/internal/config"
+	"wiki-go/internal/frontmatter"
 	"wiki-go/internal/i18n"
 	"wiki-go/internal/types"
 	"wiki-go/internal/utils"
-	"wiki-go/internal/frontmatter"
 )
 
 // PageHandler handles requests for pages
@@ -67,11 +67,9 @@ func PageHandler(w http.ResponseWriter, r *http.Request, cfg *config.Config) {
 	session := auth.GetSession(r)
 	if !auth.CanAccessDocument(path, session, cfg) {
 		if session == nil {
-			// Redirect to login if not authenticated
 			http.Redirect(w, r, "/login?redirect="+url.QueryEscape(path), http.StatusFound)
 			return
 		}
-		// Show 403 Forbidden if authenticated but unauthorized
 		http.Error(w, "Forbidden", http.StatusForbidden)
 		return
 	}

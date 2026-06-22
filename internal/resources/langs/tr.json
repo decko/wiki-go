@@ -69,6 +69,8 @@
   "settings.copyright_notice": "Telif Hakkı Bildirimi",
   "settings.timezone": "Saat Dilimi",
   "settings.language_description": "Kullanıcı arayüzü için dil",
+  "settings.log_level": "Günlük düzeyi",
+  "settings.log_level_description": "Konsola yazılan günlük mesajlarını denetler (debug, info, warn, error)",
   "settings.document_versions": "Belge Sürümleri",
   "settings.document_versions_description": "Her belge için saklanacak sürüm sayısı. Sürüm kontrolünü devre dışı bırakmak için 0 olarak ayarlayın.",
   "settings.max_upload_size": "Maksimum Dosya Yükleme Boyutu",

@@ -69,6 +69,8 @@
   "settings.copyright_notice": "कॉपीराइट नोटिस",
   "settings.timezone": "समय क्षेत्र",
   "settings.language_description": "उपयोगकर्ता इंटरफेस के लिए भाषा",
+  "settings.log_level": "लॉग स्तर",
+  "settings.log_level_description": "नियंत्रित करता है कि कौन से लॉग संदेश कंसोल में लिखे जाते हैं (debug, info, warn, error)",
   "settings.document_versions": "दस्तावेज़ संस्करण",
   "settings.document_versions_description": "प्रति दस्तावेज़ रखने के लिए संस्करणों की संख्या। वर्जनिंग को अक्षम करने के लिए 0 पर सेट करें।",
   "settings.max_upload_size": "अधिकतम फ़ाइल अपलोड आकार",

@@ -69,6 +69,8 @@
   "settings.copyright_notice": "저작권 고지",
   "settings.timezone": "시간대",
   "settings.language_description": "사용자 인터페이스의 언어",
+  "settings.log_level": "로그 레벨",
+  "settings.log_level_description": "콘솔에 기록되는 로그 메시지를 제어합니다 (debug, info, warn, error)",
   "settings.document_versions": "문서 버전",
   "settings.document_versions_description": "문서당 유지할 버전 수. 버전 관리를 비활성화하려면 0으로 설정하세요.",
   "settings.max_upload_size": "최대 파일 업로드 크기",

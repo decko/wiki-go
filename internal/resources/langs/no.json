@@ -69,6 +69,8 @@
   "settings.copyright_notice": "Opphavsrettsmelding",
   "settings.timezone": "Tidssone",
   "settings.language_description": "Språk for brukergrensesnittet",
+  "settings.log_level": "Loggnivå",
+  "settings.log_level_description": "Kontrollerer hvilke loggmeldinger som skrives til konsollen (debug, info, warn, error)",
   "settings.document_versions": "Dokumentversjoner",
   "settings.document_versions_description": "Antall versjoner å beholde per dokument. Sett til 0 for å deaktivere versjonering.",
   "settings.max_upload_size": "Maksimal filstørrelse for opplasting",

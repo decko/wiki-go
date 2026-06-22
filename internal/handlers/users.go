@@ -7,6 +7,7 @@ import (
 	"wiki-go/internal/auth"
 	"wiki-go/internal/config"
 	"wiki-go/internal/crypto"
+	"wiki-go/internal/logger"
 )
 
 // User represents a user in the response
@@ -119,6 +120,7 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 	// Check if username already exists
 	for _, user := range cfg.Users {
 		if user.Username == req.Username {
+			logger.Warn("Admin %s failed to create user %s: username already exists", session.Username, req.Username)
 			sendJSONError(w, "Username already exists", http.StatusConflict, "")
 			return
 		}
@@ -156,6 +158,8 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Update the global config
 	*cfg = updatedConfig
+
+	logger.Info("Admin %s created user %s with role %s", session.Username, req.Username, req.Role)
 
 	// Send success response
 	w.Header().Set("Content-Type", "application/json")
@@ -235,6 +239,8 @@ func UpdateUserHandler(w http.ResponseWriter, r *http.Request) {
 	// Update the global config
 	*cfg = updatedConfig
 
+	logger.Info("Admin %s updated user %s: role=%s", session.Username, req.Username, req.Role)
+
 	// Send success response
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
@@ -307,6 +313,8 @@ func DeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Update the global config
 	*cfg = updatedConfig
+
+	logger.Info("Admin %s deleted user %s", session.Username, username)
 
 	// Send success response
 	w.Header().Set("Content-Type", "application/json")

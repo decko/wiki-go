@@ -58,6 +58,18 @@
                         </div>
                         <small class="form-help">{{t "settings.language_description"}}</small>
                     </div>
+                    <div class="form-group">
+                        <label for="wikiLogLevel">{{t "settings.log_level"}}</label>
+                        <div class="language-selector-wrapper">
+                            <select id="wikiLogLevel" name="wikiLogLevel" class="language-selector">
+                                <option value="debug">Debug</option>
+                                <option value="info">Info</option>
+                                <option value="warn">Warn</option>
+                                <option value="error">Error</option>
+                            </select>
+                        </div>
+                        <small class="form-help">{{t "settings.log_level_description"}}</small>
+                    </div>
                     <div class="form-actions">
                         <button type="submit" class="dialog-button primary">{{t "common.save"}}</button>
                         <button type="button" class="dialog-button cancel-settings">{{t "common.cancel"}}</button>

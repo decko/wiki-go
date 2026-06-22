@@ -10,6 +10,7 @@ import (
 	"wiki-go/internal/config"
 	"wiki-go/internal/goldext"
 	"wiki-go/internal/i18n"
+	"wiki-go/internal/logger"
 )
 
 // WikiSettingsRequest represents the request body for updating wiki settings
@@ -28,6 +29,7 @@ type WikiSettingsRequest struct {
 	MaxVersions                 int    `json:"max_versions"`
 	MaxUploadSize               int    `json:"max_upload_size"`
 	Language                    string `json:"language"`
+	LogLevel                    string `json:"log_level"`
 }
 
 // WikiSettingsResponse represents the response for wiki settings
@@ -47,6 +49,7 @@ type WikiSettingsResponse struct {
 	MaxUploadSize               int      `json:"max_upload_size"`
 	Language                    string   `json:"language"`
 	Languages                   []string `json:"languages"`
+	LogLevel                    string   `json:"log_level"`
 }
 
 // WikiSettingsHandler handles both GET and POST requests for wiki settings
@@ -87,6 +90,7 @@ func GetWikiSettingsHandler(w http.ResponseWriter, r *http.Request) {
 		MaxUploadSize:               cfg.Wiki.MaxUploadSize,
 		Language:                    cfg.Wiki.Language,
 		Languages:                   i18n.GetAvailableLanguages(),
+		LogLevel:                    cfg.Wiki.LogLevel,
 	}
 
 	// Send the response
@@ -151,6 +155,7 @@ func UpdateWikiSettingsHandler(w http.ResponseWriter, r *http.Request) {
 	updatedConfig.Wiki.MaxVersions = req.MaxVersions
 	updatedConfig.Wiki.MaxUploadSize = req.MaxUploadSize
 	updatedConfig.Wiki.Language = req.Language
+	updatedConfig.Wiki.LogLevel = req.LogLevel
 
 	// Save the updated config to file
 	configPath := config.ConfigFilePath
@@ -165,6 +170,13 @@ func UpdateWikiSettingsHandler(w http.ResponseWriter, r *http.Request) {
 	// Apply updated timezone to shortcode rendering so :::stats recent:::
 	// reflects the new setting without requiring a restart.
 	goldext.SetWikiTimezone(updatedConfig.Wiki.Timezone)
+	logger.Init(updatedConfig.Wiki.LogLevel)
+
+	admin := ""
+	if session != nil {
+		admin = session.Username
+	}
+	logger.Info("Admin %s updated general settings", admin)
 
 	// Send success response
 	w.Header().Set("Content-Type", "application/json")

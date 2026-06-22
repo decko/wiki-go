@@ -69,6 +69,8 @@
   "settings.copyright_notice": "Tekijänoikeusilmoitus",
   "settings.timezone": "Aikavyöhyke",
   "settings.language_description": "Käyttöliittymän kieli",
+  "settings.log_level": "Lokitaso",
+  "settings.log_level_description": "Määrittää, mitkä lokiviestit kirjoitetaan konsoliin (debug, info, warn, error)",
   "settings.document_versions": "Dokumenttiversiot",
   "settings.document_versions_description": "Säilytettävien versioiden määrä per dokumentti. Aseta arvoksi 0 poistaaksesi versioinnin käytöstä.",
   "settings.max_upload_size": "Suurin sallittu tiedostokoko",

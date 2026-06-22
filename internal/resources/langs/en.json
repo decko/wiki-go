@@ -69,6 +69,8 @@
   "settings.copyright_notice": "Copyright Notice",
   "settings.timezone": "Timezone",
   "settings.language_description": "Language for the user interface",
+  "settings.log_level": "Log Level",
+  "settings.log_level_description": "Controls which log messages are written to the console (debug, info, warn, error)",
   "settings.document_versions": "Document Versions",
   "settings.document_versions_description": "Number of versions to keep per document. Set to 0 to disable versioning.",
   "settings.max_upload_size": "Max File Upload Size",

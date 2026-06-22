@@ -3,9 +3,9 @@ package migration
 import (
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"time"
+	"wiki-go/internal/logger"
 	"wiki-go/internal/roles"
 
 	"gopkg.in/yaml.v3"
@@ -68,7 +68,7 @@ func copyFile(src, dst string) error {
 // to the new role-based system. This function should be called during application
 // startup to ensure all users have a proper role assigned.
 func MigrateUserRoles(configPath string) error {
-	log.Println("Checking if user role migration is needed...")
+	logger.Debug("Checking if user role migration is needed...")
 
 	// Read the config file
 	data, err := os.ReadFile(configPath)
@@ -76,7 +76,7 @@ func MigrateUserRoles(configPath string) error {
 		if os.IsNotExist(err) {
 			// Config file does not exist yet – nothing to migrate. It will be
 			// created with defaults when the main application loads the config.
-			log.Printf("Config file %s not found, skipping user-role migration", configPath)
+			logger.Info("Config file %s not found, skipping user-role migration", configPath)
 			return nil
 		}
 		return fmt.Errorf("failed to read config file: %w", err)
@@ -99,7 +99,7 @@ func MigrateUserRoles(configPath string) error {
 	}
 
 	if !migrationNeeded {
-		log.Println("No role migration needed, all users have roles assigned")
+		logger.Debug("No role migration needed, all users have roles assigned")
 		return nil
 	}
 
@@ -108,9 +108,9 @@ func MigrateUserRoles(configPath string) error {
 	if err := copyFile(configPath, backupPath); err != nil {
 		return fmt.Errorf("failed to create config backup: %w", err)
 	}
-	log.Printf("Created config backup at: %s", backupPath)
+	logger.Info("Created config backup at: %s", backupPath)
 
-	log.Println("Migrating users from IsAdmin to role-based system...")
+	logger.Info("Migrating users from IsAdmin to role-based system...")
 
 	// Create a new users slice to hold the migrated users
 	migratedUsers := make([]User, 0, len(cfg.Users))
@@ -134,7 +134,7 @@ func MigrateUserRoles(configPath string) error {
 		user.IsAdmin = false
 
 		migratedUsers = append(migratedUsers, user)
-		log.Printf("Migrated user %s: Role=%s", user.Username, user.Role)
+		logger.Info("Migrated user %s: Role=%s", user.Username, user.Role)
 	}
 
 	// Update the config with migrated users
@@ -150,6 +150,6 @@ func MigrateUserRoles(configPath string) error {
 		return fmt.Errorf("failed to save migrated config: %w", err)
 	}
 
-	log.Println("User role migration completed successfully")
+	logger.Info("User role migration completed successfully")
 	return nil
 }

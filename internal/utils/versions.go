@@ -1,11 +1,11 @@
 package utils
 
 import (
-	"log"
 	"os"
 	"path/filepath"
 	"sort"
 	"strings"
+	"wiki-go/internal/logger"
 )
 
 // CleanupOldVersions removes old versions if the number of versions exceeds maxVersions
@@ -18,7 +18,7 @@ func CleanupOldVersions(versionDir string, maxVersions int) {
 	// Read all files in the versions directory
 	files, err := os.ReadDir(versionDir)
 	if err != nil {
-		log.Printf("Error reading versions directory: %v", err)
+		logger.Error("Error reading versions directory: %v", err)
 		return
 	}
 
@@ -54,9 +54,9 @@ func CleanupOldVersions(versionDir string, maxVersions int) {
 	for i := 0; i < versionsToDelete; i++ {
 		versionPath := filepath.Join(versionDir, versions[i])
 		if err := os.Remove(versionPath); err != nil {
-			log.Printf("Error deleting old version %s: %v", versionPath, err)
+			logger.Error("Error deleting old version %s: %v", versionPath, err)
 		} else {
-			log.Printf("Deleted old version: %s", versionPath)
+			logger.Info("Deleted old version: %s", versionPath)
 		}
 	}
 }
