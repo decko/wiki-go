@@ -38,10 +38,13 @@ func RenderMarkdownHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Get the document path from the query parameter
 	docPath := r.URL.Query().Get("path")
+	sourceLines := r.URL.Query().Get("source_lines") == "1"
 
 	// Use the utility function to render markdown to HTML with the document path
 	var html []byte
-	if docPath != "" {
+	if sourceLines {
+		html = utils.RenderMarkdownWithSourceLines(string(markdown), docPath)
+	} else if docPath != "" {
 		html = utils.RenderMarkdownWithPath(string(markdown), docPath)
 	} else {
 		html = utils.RenderMarkdown(string(markdown))

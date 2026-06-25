@@ -37,7 +37,11 @@ wiki:
     max_upload_size: 10
     # Default language for the wiki interface (en, es, etc.)
     language: en
+    # Log level: debug, info, warn, error
+    log_level: "info"
 security:
+    # cost factor for bcrypt password hashing
+    passwordstrength: 14
     login_ban:
         # Enable protection against brute force login attacks
         enabled: true
@@ -53,6 +57,7 @@ users:
     - username: admin
       password: <bcrypt-hashed-password>
       role: admin
+access_rules:
 ```
 
 ## Customization

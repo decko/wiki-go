@@ -423,6 +423,16 @@ async function loadEditor(mainContent, editorContainer, viewToolbar, editToolbar
 
             // Set up events for statusbar updates
             editor.on('cursorActivity', () => updateStatusbar(statusbar));
+            editor.on('scroll', () => {
+                const mode = window.EditorPreview ? window.EditorPreview.getEditorMode() : 'edit';
+                if (mode !== 'split') return;
+                if (!window.EditorScrollSync || window.EditorScrollSync._isEditorScrolling()) return;
+                const lineMap = window.EditorPreview._lineMap;
+                const previewEl = window.EditorPreview.getPreviewElement();
+                if (lineMap && previewEl) {
+                    window.EditorScrollSync.syncEditorToPreview(editor, lineMap, previewEl);
+                }
+            });
             editor.on('change', () => {
                 updateStatusbar(statusbar);
 

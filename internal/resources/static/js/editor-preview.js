@@ -83,6 +83,21 @@ async function applyMode(editor) {
         previewElement.innerHTML = '';
     }
 
+    // Attach / remove preview→editor scroll listener
+    if (previewElement._syncScrollHandler) {
+        previewElement.removeEventListener('scroll', previewElement._syncScrollHandler);
+        previewElement._syncScrollHandler = null;
+    }
+    if (mode === 'split' && window.EditorScrollSync) {
+        previewElement._syncScrollHandler = () => {
+            const lineMap = window.EditorPreview._lineMap;
+            if (lineMap) {
+                window.EditorScrollSync.syncPreviewToEditor(previewElement, lineMap, editor);
+            }
+        };
+        previewElement.addEventListener('scroll', previewElement._syncScrollHandler);
+    }
+
     if (mode === 'preview') {
         setToolbarButtonsEnabled(toolbar, false, '#toggle-preview');
     } else {
@@ -135,9 +150,6 @@ async function updatePreview(content) {
     if (!previewElement) return;
 
     try {
-        // Show loading indicator
-        previewElement.innerHTML = '<div class="preview-loading">Loading preview...</div>';
-
         // Get current path for handling relative links correctly
         const isHomepage = window.location.pathname === '/';
         const path = isHomepage ? '/' : window.location.pathname;
@@ -145,8 +157,8 @@ async function updatePreview(content) {
         // Check for frontmatter to add special styling if needed
         const hasFrontmatter = content.startsWith('---\n');
 
-        // Call the server-side renderer
-        const response = await fetch(`/api/render-markdown?path=${encodeURIComponent(path)}`, {
+        // Call the server-side renderer (request source-line annotations for scroll sync)
+        const response = await fetch(`/api/render-markdown?path=${encodeURIComponent(path)}&source_lines=1`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'text/plain',
@@ -167,7 +179,15 @@ async function updatePreview(content) {
             previewElement.classList.remove('kanban-preview');
         }
 
-        previewElement.innerHTML = html;
+        // Patch the DOM incrementally so scroll position is preserved
+        if (typeof morphdom !== 'undefined') {
+            const wrapper = document.createElement('div');
+            wrapper.className = previewElement.className;
+            wrapper.innerHTML = html;
+            morphdom(previewElement, wrapper, { childrenOnly: true });
+        } else {
+            previewElement.innerHTML = html;
+        }
 
         // Store Mermaid sources BEFORE any rendering happens
         const mermaidDiagrams = previewElement.querySelectorAll('.mermaid');
@@ -224,6 +244,11 @@ async function updatePreview(content) {
 
         // Wait for all libraries to load and render
         await Promise.all(promises);
+
+        // Rebuild the scroll-sync line map now that the DOM is updated
+        if (window.EditorScrollSync) {
+            window.EditorPreview._lineMap = window.EditorScrollSync.buildLineMap(previewElement);
+        }
 
     } catch (error) {
         console.error('Preview error:', error);
