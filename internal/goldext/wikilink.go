@@ -33,6 +33,10 @@ var wikiLinkRe = regexp.MustCompile(`(!?)\[\[([^\]\n]+)\]\]`)
 // defaults to the last path segment. Content inside code spans/blocks and the
 // ![[...]] embed form are left untouched.
 func WikiLinkPreprocessor(markdown string, docPath string) string {
+	if !strings.Contains(markdown, "[[") {
+		return markdown
+	}
+
 	sections := splitCodeSections(markdown)
 
 	// Build the name->path index lazily, and only if a bare target appears.

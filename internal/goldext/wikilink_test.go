@@ -121,3 +121,11 @@ func TestWikiLinkPreprocessor_DuplicateNameShortestPathWins(t *testing.T) {
 		t.Errorf("got %q, want %q", got, want)
 	}
 }
+
+func TestWikiLinkPreprocessorNoWikiLinks(t *testing.T) {
+	input := "This is a normal paragraph with **bold** and [a link](https://example.com)."
+	got := WikiLinkPreprocessor(input, "")
+	if got != input {
+		t.Errorf("expected input returned unchanged, got %q", got)
+	}
+}
