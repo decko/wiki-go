@@ -73,6 +73,10 @@ func cachedSlugIndex() map[string]string {
 // root-level path so the link still red-links via LinkPreprocessor. Display text
 // defaults to the last path segment. Content inside code spans/blocks and the
 // ![[...]] embed form are left untouched.
+//
+// Note: docPath is accepted to satisfy the Preprocessor interface but is not
+// currently used — bare-name resolution is always wiki-root-relative. It is a
+// candidate for future document-relative resolution (Obsidian vault-relative).
 func WikiLinkPreprocessor(markdown string, docPath string) string {
 	if !strings.Contains(markdown, "[[") {
 		return markdown
@@ -90,26 +94,37 @@ func WikiLinkPreprocessor(markdown string, docPath string) string {
 		if sections[i].isCode {
 			continue
 		}
-		sections[i].content = wikiLinkRe.ReplaceAllStringFunc(sections[i].content, func(match string) string {
-			parts := wikiLinkRe.FindStringSubmatch(match)
-			if len(parts) < 3 {
-				return match
-			}
+		content := sections[i].content
+		matches := wikiLinkRe.FindAllStringSubmatchIndex(content, -1)
+		if len(matches) == 0 {
+			continue
+		}
+		var sb strings.Builder
+		last := 0
+		for _, m := range matches {
+			// m[0]:m[1] = full match, m[2]:m[3] = group 1 (!), m[4]:m[5] = group 2 (target)
+			sb.WriteString(content[last:m[0]])
+			last = m[1]
+
+			embedPrefix := content[m[2]:m[3]]
+			inner := content[m[4]:m[5]]
 
 			// Leave embeds (![[...]]) for a future preprocessor to handle.
-			if parts[1] == "!" {
-				return match
+			if embedPrefix == "!" {
+				sb.WriteString(content[m[0]:m[1]])
+				continue
 			}
 
 			// Split target and optional display label on the first "|".
-			target, label := parts[2], ""
-			if idx := strings.Index(target, "|"); idx != -1 {
-				target, label = target[:idx], target[idx+1:]
+			target, label := inner, ""
+			if idx := strings.Index(inner, "|"); idx != -1 {
+				target, label = inner[:idx], inner[idx+1:]
 			}
 			target = strings.TrimSpace(target)
 			label = strings.TrimSpace(label)
 			if target == "" {
-				return match
+				sb.WriteString(content[m[0]:m[1]])
+				continue
 			}
 
 			// Separate any #anchor from the page path.
@@ -145,8 +160,10 @@ func WikiLinkPreprocessor(markdown string, docPath string) string {
 			}
 			url += anchor
 
-			return "[" + label + "](" + url + ")"
-		})
+			sb.WriteString("[" + label + "](" + url + ")")
+		}
+		sb.WriteString(content[last:])
+		sections[i].content = sb.String()
 	}
 
 	return joinSections(sections)

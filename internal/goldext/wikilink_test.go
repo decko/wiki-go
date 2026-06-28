@@ -8,6 +8,15 @@ import (
 )
 
 func TestWikiLinkPreprocessor(t *testing.T) {
+	// Run inside an empty temp dir so bare-name resolution always starts from a
+	// known-empty slug index, regardless of where the test binary is invoked.
+	dir := t.TempDir()
+	t.Chdir(dir)
+	slugCache.mu.Lock()
+	slugCache.index = nil
+	slugCache.modTime = time.Time{}
+	slugCache.mu.Unlock()
+
 	cases := []struct {
 		name string
 		in   string
