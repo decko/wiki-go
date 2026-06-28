@@ -2,10 +2,13 @@ package goldext
 
 import (
 	"io/fs"
+	"os"
 	"path"
 	"path/filepath"
 	"regexp"
 	"strings"
+	"sync"
+	"time"
 )
 
 // documentsRoot is the directory Wiki-Go stores documents under, relative to
@@ -15,6 +18,44 @@ const documentsRoot = "data/documents"
 // wikiLinkRe matches [[target]] or [[target|label]]. The optional leading "!"
 // is captured so Obsidian-style embeds (![[...]]) can be left untouched.
 var wikiLinkRe = regexp.MustCompile(`(!?)\[\[([^\]\n]+)\]\]`)
+
+// slugCache holds the last-built slug→path index and the mtime of
+// documentsRoot at the time it was built. A single os.Stat on documentsRoot
+// per render is enough to detect any structural change (create/delete/rename).
+var slugCache struct {
+	mu      sync.RWMutex
+	index   map[string]string
+	modTime time.Time
+}
+
+// cachedSlugIndex returns the slug→path index, rebuilding it only when the
+// mtime of documentsRoot has changed since the last build.
+func cachedSlugIndex() map[string]string {
+	info, err := os.Stat(documentsRoot)
+	var mtime time.Time
+	if err == nil {
+		mtime = info.ModTime()
+	}
+
+	// Fast path: cache hit under read-lock.
+	slugCache.mu.RLock()
+	if slugCache.index != nil && slugCache.modTime.Equal(mtime) {
+		idx := slugCache.index
+		slugCache.mu.RUnlock()
+		return idx
+	}
+	slugCache.mu.RUnlock()
+
+	// Slow path: rebuild under write-lock with double-checked locking.
+	slugCache.mu.Lock()
+	defer slugCache.mu.Unlock()
+	if slugCache.index != nil && slugCache.modTime.Equal(mtime) {
+		return slugCache.index // another goroutine beat us here
+	}
+	slugCache.index = buildSlugIndex()
+	slugCache.modTime = mtime
+	return slugCache.index
+}
 
 // WikiLinkPreprocessor converts [[wikilinks]] into standard Markdown links
 // before Goldmark runs. Examples:
@@ -39,15 +80,10 @@ func WikiLinkPreprocessor(markdown string, docPath string) string {
 
 	sections := splitCodeSections(markdown)
 
-	// Build the name->path index lazily, and only if a bare target appears.
-	var index map[string]string
-	var indexBuilt bool
+	// Resolve a bare name via the cached slug index (rebuilt only when
+	// data/documents mtime changes).
 	resolveName := func(name string) string {
-		if !indexBuilt {
-			index = buildSlugIndex()
-			indexBuilt = true
-		}
-		return index[name]
+		return cachedSlugIndex()[name]
 	}
 
 	for i := range sections {

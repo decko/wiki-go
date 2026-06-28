@@ -4,6 +4,7 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 )
 
 func TestWikiLinkPreprocessor(t *testing.T) {
@@ -127,5 +128,39 @@ func TestWikiLinkPreprocessorNoWikiLinks(t *testing.T) {
 	got := WikiLinkPreprocessor(input, "")
 	if got != input {
 		t.Errorf("expected input returned unchanged, got %q", got)
+	}
+}
+
+func TestSlugCacheRevalidatesOnMtimeChange(t *testing.T) {
+	dir := t.TempDir()
+	t.Chdir(dir)
+
+	// Reset the package-level cache so prior test runs don't interfere.
+	slugCache.mu.Lock()
+	slugCache.index = nil
+	slugCache.modTime = time.Time{}
+	slugCache.mu.Unlock()
+
+	// First render: empty tree, bare name should fall back to root.
+	got := WikiLinkPreprocessor("[[new-page]]", "")
+	if got != "[new-page](/new-page)" {
+		t.Fatalf("before add: got %q, want %q", got, "[new-page](/new-page)")
+	}
+
+	// Add the page so it now exists in the tree.
+	writePage(t, dir, "section/new-page")
+
+	// Bump the mtime on documentsRoot so the cache detects a change.
+	newMtime := time.Now().Add(2 * time.Second)
+	docsDir := filepath.Join(dir, documentsRoot)
+	if err := os.Chtimes(docsDir, newMtime, newMtime); err != nil {
+		t.Fatal(err)
+	}
+
+	// Second render: cache should rebuild and resolve the new page.
+	got = WikiLinkPreprocessor("[[new-page]]", "")
+	want := "[new-page](/section/new-page)"
+	if got != want {
+		t.Errorf("after add: got %q, want %q", got, want)
 	}
 }
