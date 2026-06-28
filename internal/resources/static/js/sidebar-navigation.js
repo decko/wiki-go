@@ -45,15 +45,20 @@
     function toggleSidebar() {
         if (!hamburger || !sidebar || !body || !content) return;
         
-        hamburger.classList.toggle('active');
-        sidebar.classList.toggle('active');
-        body.classList.toggle('sidebar-active');
-        content.classList.toggle('sidebar-active');
+        if (sidebar.classList.contains('active')) {
+            closeSidebar();
+        } else {
+            openSidebar();
+        }
     }
 
     function openSidebar() {
         if (!hamburger || !sidebar || !body || !content) return;
-        
+
+        // Save scroll position before position:fixed resets it
+        const scrollY = window.scrollY;
+        body.style.top = `-${scrollY}px`;
+
         hamburger.classList.add('active');
         sidebar.classList.add('active');
         body.classList.add('sidebar-active');
@@ -65,11 +70,17 @@
 
     function closeSidebar() {
         if (!hamburger || !sidebar || !body || !content) return;
-        
+
+        // Restore scroll position that was lost when position:fixed was applied
+        const scrollY = -parseInt(body.style.top || '0', 10);
+        body.style.top = '';
+
         hamburger.classList.remove('active');
         sidebar.classList.remove('active');
         body.classList.remove('sidebar-active');
         content.classList.remove('sidebar-active');
+
+        window.scrollTo(0, scrollY);
         
         // Clear any transforms from dragging
         resetSidebarTransforms();
