@@ -15,12 +15,13 @@ import (
 	"wiki-go/internal/config"
 	"wiki-go/internal/frontmatter"
 	"wiki-go/internal/i18n"
+	"wiki-go/internal/tags"
 	"wiki-go/internal/types"
 	"wiki-go/internal/utils"
 )
 
 // PageHandler handles requests for pages
-func PageHandler(w http.ResponseWriter, r *http.Request, cfg *config.Config) {
+func PageHandler(w http.ResponseWriter, r *http.Request, cfg *config.Config, tagIdx *tags.TagIndex) {
 	// Add cache control headers to prevent caching
 	w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
 	w.Header().Set("Pragma", "no-cache")
@@ -92,11 +93,21 @@ func PageHandler(w http.ResponseWriter, r *http.Request, cfg *config.Config) {
 	// Get the full filesystem path - adjust to use documents subdirectory
 	fsPath := filepath.Join(cfg.Wiki.RootDir, cfg.Wiki.DocumentsDir, decodedPath)
 
-	// Check if path exists
+	// Determine whether this is a directory, a flat .md file, or not found
+	isFlatFile := false
+	flatFilePath := ""
 	info, err := os.Stat(fsPath)
 	if err != nil || !info.IsDir() {
-		NotFoundHandler(w, r, cfg)
-		return
+		// Not a directory — try fsPath + ".md" as a flat file
+		candidate := fsPath + ".md"
+		if fi, ferr := os.Stat(candidate); ferr == nil && !fi.IsDir() {
+			isFlatFile = true
+			flatFilePath = candidate
+			info = fi
+		} else {
+			NotFoundHandler(w, r, cfg)
+			return
+		}
 	}
 
 	// Find the navigation item for breadcrumbs
@@ -105,7 +116,7 @@ func PageHandler(w http.ResponseWriter, r *http.Request, cfg *config.Config) {
 		navItem = &types.NavItem{
 			Title: utils.FormatDirName(filepath.Base(decodedPath)),
 			Path:  path,
-			IsDir: true,
+			IsDir: !isFlatFile,
 		}
 	}
 
@@ -116,12 +127,30 @@ func PageHandler(w http.ResponseWriter, r *http.Request, cfg *config.Config) {
 	var lastModified time.Time
 	var dirContent template.HTML
 	var rawContent string // Raw markdown content for edit mode
+	var frontmatterData map[string]interface{}
 
-	// Look for document.md in the directory
-	docPath := filepath.Join(fsPath, "document.md")
-	docInfo, err := os.Stat(docPath)
-	if err == nil {
-		// Read and render document.md if it exists
+	var docPath string
+	var docInfo os.FileInfo
+
+	if isFlatFile {
+		// Flat .md file — read it directly
+		docPath = flatFilePath
+		docInfo = info
+	} else {
+		// Directory — look for document.md, fall back to index.md
+		docPath = filepath.Join(fsPath, "document.md")
+		docInfo, err = os.Stat(docPath)
+		if err != nil {
+			docPath = filepath.Join(fsPath, "index.md")
+			docInfo, err = os.Stat(docPath)
+			if err != nil {
+				docInfo = nil
+			}
+		}
+	}
+
+	if docInfo != nil {
+		// Read and render the markdown file
 		mdContent, err := os.ReadFile(docPath)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -133,72 +162,118 @@ func PageHandler(w http.ResponseWriter, r *http.Request, cfg *config.Config) {
 			rawContent = string(mdContent)
 		}
 
-		// Parse frontmatter to get document layout
-		metadata, _, hasFrontmatter := frontmatter.Parse(string(mdContent))
+		// Parse frontmatter with raw fields for OKF metadata
+		metadata, rawFields, _, hasFrontmatter := frontmatter.ParseWithRawFields(string(mdContent))
 		documentLayout := ""
 		if hasFrontmatter {
 			documentLayout = metadata.Layout
+			frontmatterData = rawFields
 		}
 
 		// Use the document path for rendering to handle local file references
 		content = template.HTML(utils.RenderMarkdownWithPath(string(mdContent), decodedPath))
-		
+
 		// If content is empty but document exists, ensure we have something truthy for template conditions
 		if strings.TrimSpace(string(content)) == "" {
 			content = template.HTML(" ") // Single space to make it truthy but effectively empty
 		}
-		
+
 		lastModified = docInfo.ModTime()
 
 		// Update the document layout in the page data
 		navItem.DocumentLayout = documentLayout
 	}
 
-	// List directory contents
-	files, err := os.ReadDir(fsPath)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	// Build directory listing HTML
-	var dirItems []string
-	for _, f := range files {
-		if !f.IsDir() || strings.HasPrefix(f.Name(), ".") || f.Name() == "document.md" {
-			continue // Skip non-directories, hidden files, and document.md
+	// Directory listing only applies when fsPath is a directory
+	if !isFlatFile {
+		// List directory contents
+		files, err := os.ReadDir(fsPath)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 
-		dirName := f.Name()
-		urlPath := filepath.Join(path, dirName)
-		// Normalize to forward slashes for access check
-		urlPath = strings.ReplaceAll(urlPath, "\\", "/")
-
-		// Apply the same access check as the sidebar navigation
-		if !auth.CanAccessDocument(urlPath, session, cfg) {
-			continue
+		// Build directory listing HTML with metadata from tag index
+		allDocs := tagIdx.GetAllDocs()
+		docByPath := make(map[string]tags.DocumentRef, len(allDocs))
+		for _, d := range allDocs {
+			docByPath[d.Path] = d
 		}
 
-		// Check if subdirectory has a document.md
-		subDocPath := filepath.Join(fsPath, dirName, "document.md")
-		if _, err := os.Stat(subDocPath); err == nil {
-			// Use the GetDocumentTitle function which includes emoji processing
-			dirTitle := utils.GetDocumentTitle(filepath.Join(fsPath, dirName))
-			dirItems = append(dirItems, fmt.Sprintf(`<div class="directory-item is-dir"><a href="%s">%s</a></div>`,
-				urlPath, dirTitle))
-			continue
+		var dirItems []string
+		for _, f := range files {
+			name := f.Name()
+			if strings.HasPrefix(name, ".") || name == "document.md" || name == "index.md" || name == "log.md" {
+				continue
+			}
+
+			entryPath := filepath.Join(fsPath, name)
+			info, statErr := os.Stat(entryPath)
+			if statErr != nil {
+				continue
+			}
+
+			if info.IsDir() {
+				urlPath := filepath.Join(path, name)
+				urlPath = strings.ReplaceAll(urlPath, "\\", "/")
+
+				if !auth.CanAccessDocument(urlPath, session, cfg) {
+					continue
+				}
+
+				dirTitle := utils.FormatDirName(name)
+				subDocPath := filepath.Join(entryPath, "document.md")
+				if _, err := os.Stat(subDocPath); err == nil {
+					dirTitle = utils.GetDocumentTitle(entryPath)
+				}
+				dirItems = append(dirItems, fmt.Sprintf(`<div class="directory-item is-dir"><a href="%s">%s</a></div>`,
+					urlPath, dirTitle))
+			} else if strings.HasSuffix(name, ".md") {
+				slug := strings.TrimSuffix(name, ".md")
+				urlPath := filepath.Join(path, slug)
+				urlPath = strings.ReplaceAll(urlPath, "\\", "/")
+
+				var item strings.Builder
+				item.WriteString(`<div class="okf-dir-item">`)
+
+				if doc, ok := docByPath[urlPath]; ok {
+					if doc.Type != "" {
+						item.WriteString(fmt.Sprintf(`<span class="okf-type-badge">%s</span> `, doc.Type))
+					}
+					item.WriteString(fmt.Sprintf(`<a href="%s"><strong>%s</strong></a>`, urlPath, doc.Title))
+					if doc.Description != "" {
+						desc := doc.Description
+						if len(desc) > 150 {
+							desc = desc[:147] + "..."
+						}
+						item.WriteString(fmt.Sprintf(`<div class="okf-dir-desc">%s</div>`, desc))
+					}
+					if len(doc.Tags) > 0 {
+						item.WriteString(`<div class="okf-tags" style="margin-top:4px;">`)
+						for _, tag := range doc.Tags {
+							item.WriteString(fmt.Sprintf(`<a href="/tags/%s" class="okf-tag">%s</a>`, tag, tag))
+						}
+						item.WriteString(`</div>`)
+					}
+				} else {
+					title := utils.GetFlatMDTitle(entryPath)
+					if title == "" {
+						title = utils.FormatDirName(slug)
+					}
+					item.WriteString(fmt.Sprintf(`<a href="%s">%s</a>`, urlPath, title))
+				}
+
+				item.WriteString(`</div>`)
+				dirItems = append(dirItems, item.String())
+			}
 		}
 
-		// Fallback to formatted directory name if no document.md or no title found
-		dirTitle := utils.FormatDirName(dirName)
-		dirItems = append(dirItems, fmt.Sprintf(`<div class="directory-item is-dir"><a href="%s">%s</a></div>`,
-			urlPath, dirTitle))
+		if len(dirItems) > 0 {
+			dirContent = template.HTML(strings.Join(dirItems, "\n"))
+		}
 	}
 
-	if len(dirItems) > 0 {
-		dirContent = template.HTML(strings.Join(dirItems, "\n"))
-	}
-
-	// If no document.md exists, show directory title and listing
+	// If no document content exists, show directory title and listing
 	if docInfo == nil {
 		content = template.HTML(fmt.Sprintf("<h1>%s</h1>", navItem.Title))
 		lastModified = info.ModTime()
@@ -264,7 +339,8 @@ func PageHandler(w http.ResponseWriter, r *http.Request, cfg *config.Config) {
 		DocPath:            decodedPath,
 		DocumentLayout:     navItem.DocumentLayout,
 		IsEditMode:         isEditMode,
-		RawContent:         rawContent, // Pass raw markdown content for edit mode
+		RawContent:         rawContent,         // Pass raw markdown content for edit mode
+		FrontmatterData:    frontmatterData,    // OKF frontmatter metadata
 	}
 
 	renderTemplate(w, data)

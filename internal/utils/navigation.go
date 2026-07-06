@@ -83,24 +83,29 @@ func BuildNavigation(rootDir string, documentsDir string) (*types.NavItem, error
 		}
 	}
 
-	err := filepath.Walk(docsPath, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
+	err := walkDirFollowSymlinks(docsPath, func(path string, info os.FileInfo) {
+		// Skip the documents directory itself
+		if path == docsPath {
+			return
 		}
 
-		// Skip the documents directory itself and non-directories
-		if path == docsPath || !info.IsDir() {
-			return nil
+		base := filepath.Base(path)
+
+		// Skip hidden entries and document.md
+		if strings.HasPrefix(base, ".") || base == "document.md" {
+			return
 		}
 
-		// Skip hidden directories and document.md files
-		if strings.HasPrefix(filepath.Base(path), ".") || filepath.Base(path) == "document.md" {
-			return nil
-		}
-
-		// Skip the pages/home directory in navigation
+		// Skip pages/home
 		if path == filepath.Join(rootDir, "pages", "home") || path == filepath.Join(rootDir, "pages") {
-			return filepath.SkipDir
+			return
+		}
+
+		isDir := info.IsDir()
+		isFlatMD := !isDir && strings.HasSuffix(base, ".md") && base != "index.md" && base != "log.md"
+
+		if !isDir && !isFlatMD {
+			return
 		}
 
 		// Create relative path for the URL
@@ -108,51 +113,146 @@ func BuildNavigation(rootDir string, documentsDir string) (*types.NavItem, error
 		relPath = strings.TrimPrefix(relPath, string(os.PathSeparator))
 		relPath = filepath.ToSlash(relPath)
 
-		// Get the title from document.md's H1 or fallback to formatted directory name
-		title := GetDocumentTitle(path)
+		var title string
+		var urlPath string
 
-		// Split the path into components
-		parts := strings.Split(relPath, "/")
-		current := root
+		if isDir {
+			title = GetDocumentTitle(path)
+			parts := strings.Split(relPath, "/")
+			current := root
+			for i := 0; i < len(parts); i++ {
+				urlPath = "/" + ToURLPath(filepath.ToSlash(filepath.Join(parts[:i+1]...)))
+				var found *types.NavItem
+				for _, child := range current.Children {
+					if child.Path == urlPath {
+						found = child
+						break
+					}
+				}
+				if found == nil {
+					dirTitle := ""
+					if i == len(parts)-1 {
+						dirTitle = title
+					} else {
+						dirTitle = FormatDirName(parts[i])
+					}
+					found = &types.NavItem{
+						Title:    dirTitle,
+						Path:     urlPath,
+						IsDir:    true,
+						Children: make([]*types.NavItem, 0),
+					}
+					current.Children = append(current.Children, found)
+				}
+				current = found
+			}
+		} else {
+			// Flat .md file — add as a leaf nav item
+			slug := strings.TrimSuffix(base, ".md")
+			urlPath = "/" + strings.TrimSuffix(relPath, ".md")
+			title = GetFlatMDTitle(path)
+			if title == "" {
+				title = FormatDirName(slug)
+			}
 
-		// Build the directory structure
-		for i := 0; i < len(parts); i++ {
-			// Create URL path with dashes
-			urlPath := "/" + ToURLPath(filepath.ToSlash(filepath.Join(parts[:i+1]...)))
+			// Find parent node
+			parentRel := filepath.ToSlash(filepath.Dir(relPath))
+			current := root
+			if parentRel != "." {
+				parts := strings.Split(parentRel, "/")
+				for i := 0; i < len(parts); i++ {
+					parentPath := "/" + ToURLPath(filepath.ToSlash(filepath.Join(parts[:i+1]...)))
+					var found *types.NavItem
+					for _, child := range current.Children {
+						if child.Path == parentPath {
+							found = child
+							break
+						}
+					}
+					if found == nil {
+						found = &types.NavItem{
+							Title:    FormatDirName(parts[i]),
+							Path:     parentPath,
+							IsDir:    true,
+							Children: make([]*types.NavItem, 0),
+						}
+						current.Children = append(current.Children, found)
+					}
+					current = found
+				}
+			}
 
-			// Look for existing directory at this level
-			var found *types.NavItem
+			// Check if already added
+			exists := false
 			for _, child := range current.Children {
 				if child.Path == urlPath {
-					found = child
+					exists = true
 					break
 				}
 			}
-
-			if found == nil {
-				// Create new directory item
-				dirTitle := ""
-				if i == len(parts)-1 {
-					dirTitle = title // Use document.md title for leaf nodes
-				} else {
-					dirTitle = FormatDirName(parts[i])
-				}
-
-				found = &types.NavItem{
-					Title:    dirTitle,
+			if !exists {
+				current.Children = append(current.Children, &types.NavItem{
+					Title:    title,
 					Path:     urlPath,
-					IsDir:    true,
+					IsDir:    false,
 					Children: make([]*types.NavItem, 0),
-				}
-				current.Children = append(current.Children, found)
+				})
 			}
-			current = found
 		}
-
-		return nil
 	})
 
 	return root, err
+}
+
+// walkDirFollowSymlinks walks a directory tree following symlinks.
+func walkDirFollowSymlinks(root string, fn func(string, os.FileInfo)) error {
+	entries, err := os.ReadDir(root)
+	if err != nil {
+		return err
+	}
+	for _, entry := range entries {
+		path := filepath.Join(root, entry.Name())
+		info, err := os.Stat(path) // follows symlinks
+		if err != nil {
+			continue
+		}
+		fn(path, info)
+		if info.IsDir() {
+			walkDirFollowSymlinks(path, fn)
+		}
+	}
+	return nil
+}
+
+// GetFlatMDTitle reads the title from a flat .md file (frontmatter title: or first # heading).
+func GetFlatMDTitle(path string) string {
+	file, err := os.Open(path)
+	if err != nil {
+		return ""
+	}
+	defer file.Close()
+	scanner := bufio.NewScanner(file)
+	inFrontmatter := false
+	for scanner.Scan() {
+		line := strings.TrimSpace(scanner.Text())
+		if line == "---" {
+			inFrontmatter = !inFrontmatter
+			continue
+		}
+		if inFrontmatter {
+			if strings.HasPrefix(line, "title:") {
+				t := strings.TrimPrefix(line, "title:")
+				t = strings.TrimSpace(t)
+				t = strings.Trim(t, "\"'")
+				return t
+			}
+			continue
+		}
+		if strings.HasPrefix(line, "# ") {
+			return strings.TrimPrefix(line, "# ")
+		}
+	}
+	return ""
 }
 
 // FindNavItem finds a navigation item by its path

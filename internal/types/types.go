@@ -52,7 +52,8 @@ type PageData struct {
 	IsAuthenticated    bool               // Whether the user is authenticated
 	UserRole           string             // User role: "admin", "editor", or "viewer"
 	DocPath            string             // Document path for API calls
-	DocumentLayout     string             // Document layout type from frontmatter (e.g., "kanban")
-	IsEditMode         bool               // Whether page is in edit mode (separate edit page architecture)
-	RawContent         string             // Raw markdown content with frontmatter for edit mode
+	DocumentLayout     string                 // Document layout type from frontmatter (e.g., "kanban")
+	IsEditMode         bool                   // Whether page is in edit mode (separate edit page architecture)
+	RawContent         string                 // Raw markdown content with frontmatter for edit mode
+	FrontmatterData    map[string]interface{} // OKF frontmatter metadata (tags, type, etc.)
 }

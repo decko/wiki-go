@@ -14,6 +14,7 @@ import (
 	"wiki-go/internal/handlers"
 	"wiki-go/internal/logger"
 	"wiki-go/internal/resources"
+	"wiki-go/internal/tags"
 )
 
 // addCacheControlHeaders adds appropriate Cache-Control headers based on file type
@@ -56,8 +57,8 @@ func CSPMiddleware(next http.Handler) http.Handler {
 			"default-src 'self' 'unsafe-inline' 'unsafe-eval'",
 			// Allow inline styles and styles from same origin
 			"style-src 'self' 'unsafe-inline'",
-			// Allow scripts from same origin and inline scripts
-			"script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+			// Allow scripts from same origin, inline scripts, and D3.js CDN
+			"script-src 'self' 'unsafe-inline' 'unsafe-eval' https://d3js.org",
 			// Images from same origin and data: URLs (for embedded images)
 			"img-src 'self' data: https://*.ytimg.com https://*.vimeocdn.com",
 			// Connect only to same origin
@@ -456,6 +457,33 @@ func SetupRoutes(cfg *config.Config) {
 	// Links Metadata API - Editor or Admin only
 	mux.HandleFunc("/api/links/fetch-metadata", editorMiddleware(handlers.FetchMetadataHandler))
 
+	// OKF: Tag index for tag browsing and graph
+	tagIdx := tags.NewTagIndex(cfg.Wiki.RootDir, cfg.Wiki.DocumentsDir)
+	tagIdx.Build()
+
+	// Tag browsing
+	mux.HandleFunc("/tags/", func(w http.ResponseWriter, r *http.Request) {
+		handlers.TagsHandler(w, r, cfg, tagIdx)
+	})
+
+	// Knowledge graph page
+	mux.HandleFunc("/graph/", func(w http.ResponseWriter, r *http.Request) {
+		handlers.GraphPageHandler(w, r, cfg)
+	})
+
+	// Knowledge graph JSON API
+	mux.HandleFunc("/api/graph", func(w http.ResponseWriter, r *http.Request) {
+		handlers.GraphDataHandler(w, r, cfg, tagIdx)
+	})
+
+	// Inbox
+	mux.HandleFunc("/inbox/", func(w http.ResponseWriter, r *http.Request) {
+		handlers.InboxHandler(w, r, cfg, tagIdx)
+	})
+	mux.HandleFunc("/api/inbox", func(w http.ResponseWriter, r *http.Request) {
+		handlers.InboxAPIHandler(w, r, cfg, tagIdx)
+	})
+
 	// Login page
 	mux.HandleFunc("/login", handlers.LoginPageHandler)
 
@@ -487,7 +515,7 @@ func SetupRoutes(cfg *config.Config) {
 		}
 
 		// Otherwise, serve the page based on the URL path
-		handlers.PageHandler(w, r, cfg)
+		handlers.PageHandler(w, r, cfg, tagIdx)
 	})
 
 	// Apply middleware to all routes

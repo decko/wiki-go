@@ -239,6 +239,16 @@ func isLocalPath(path string) bool {
 		return false
 	}
 
+	// Relative paths ending in / are directory links, not file attachments
+	if strings.HasSuffix(path, "/") {
+		return false
+	}
+
+	// Relative paths ending in .md are document links, not file attachments
+	if strings.HasSuffix(path, ".md") {
+		return false
+	}
+
 	// All other URLs are considered local file references
 	return true
 }

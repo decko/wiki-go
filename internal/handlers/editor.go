@@ -64,6 +64,20 @@ func SourceHandler(w http.ResponseWriter, r *http.Request) {
 		// Get the full filesystem path, adding the documents subdirectory
 		dirPath = filepath.Join(cfg.Wiki.RootDir, cfg.Wiki.DocumentsDir, path)
 		docPath = filepath.Join(dirPath, "document.md")
+
+		// Flat .md file fallback
+		if _, err := os.Stat(docPath); err != nil {
+			flatPath := filepath.Join(cfg.Wiki.RootDir, cfg.Wiki.DocumentsDir, path+".md")
+			if fi, err := os.Stat(flatPath); err == nil && !fi.IsDir() {
+				docPath = flatPath
+				dirPath = filepath.Dir(flatPath)
+			} else {
+				indexPath := filepath.Join(dirPath, "index.md")
+				if fi, err := os.Stat(indexPath); err == nil && !fi.IsDir() {
+					docPath = indexPath
+				}
+			}
+		}
 	}
 
 	// Read the markdown file
@@ -158,6 +172,19 @@ func SaveHandler(w http.ResponseWriter, r *http.Request) {
 
 		// Get the full filesystem path, adding the documents subdirectory
 		docPath = filepath.Join(cfg.Wiki.RootDir, cfg.Wiki.DocumentsDir, path, "document.md")
+
+		// Flat .md file fallback
+		if _, err := os.Stat(docPath); err != nil {
+			flatPath := filepath.Join(cfg.Wiki.RootDir, cfg.Wiki.DocumentsDir, path+".md")
+			if fi, err := os.Stat(flatPath); err == nil && !fi.IsDir() {
+				docPath = flatPath
+			} else {
+				indexPath := filepath.Join(cfg.Wiki.RootDir, cfg.Wiki.DocumentsDir, path, "index.md")
+				if fi, err := os.Stat(indexPath); err == nil && !fi.IsDir() {
+					docPath = indexPath
+				}
+			}
+		}
 	}
 
 	// Read the request body (new content)
@@ -449,8 +476,17 @@ func DeleteDocumentHandler(w http.ResponseWriter, r *http.Request) {
 	documentDir := filepath.Join(cfg.Wiki.RootDir, cfg.Wiki.DocumentsDir)
 	fullPath := filepath.Join(documentDir, docPath)
 
-	// Check if file exists
+	// Check if file exists — try directory first, then flat .md file
 	fileInfo, err := os.Stat(fullPath)
+	if err != nil {
+		// Try flat .md file
+		flatPath := fullPath + ".md"
+		if fi, ferr := os.Stat(flatPath); ferr == nil && !fi.IsDir() {
+			fullPath = flatPath
+			fileInfo = fi
+			err = nil
+		}
+	}
 	if err != nil {
 		if os.IsNotExist(err) {
 			w.Header().Set("Content-Type", "application/json")

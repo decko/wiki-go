@@ -112,6 +112,17 @@ func getTemplate() (*template.Template, error) {
 				currentYear := strconv.Itoa(time.Now().Year())
 				return strings.ReplaceAll(text, ":::year:::", currentYear)
 			},
+			"contains": strings.Contains,
+			"youtubeID": func(url string) string {
+				if i := strings.Index(url, "v="); i != -1 {
+					id := url[i+2:]
+					if amp := strings.IndexByte(id, '&'); amp != -1 {
+						id = id[:amp]
+					}
+					return id
+				}
+				return ""
+			},
 			// dict builds a map[string]interface{} from alternating key/value
 			// arguments. Used by recursive templates to forward render-time
 			// options without rebinding $.

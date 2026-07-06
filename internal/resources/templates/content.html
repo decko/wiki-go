@@ -5,6 +5,41 @@
         <img src="{{$bannerPath}}" alt="Banner" class="responsive-banner">
     </div>
     {{end}}
+    {{if .FrontmatterData}}
+    <div class="okf-meta">
+        {{with index .FrontmatterData "type"}}
+        <span class="okf-type-badge">{{.}}</span>
+        {{end}}
+        {{with index .FrontmatterData "needs_enrichment"}}
+        <span class="okf-status-badge okf-needs-enrichment">needs enrichment</span>
+        {{end}}
+        {{with index .FrontmatterData "status"}}
+        <span class="okf-status-badge okf-status-{{.}}">{{.}}</span>
+        {{end}}
+        {{with index .FrontmatterData "language"}}
+        <span class="okf-lang-badge">{{.}}</span>
+        {{end}}
+        {{with index .FrontmatterData "words"}}
+        <span class="okf-words">{{.}} words</span>
+        {{end}}
+        {{with index .FrontmatterData "tags"}}
+        <div class="okf-tags">
+            {{range .}}<a href="/tags/{{.}}" class="okf-tag">{{.}}</a>{{end}}
+        </div>
+        {{end}}
+    </div>
+    {{with index .FrontmatterData "resource"}}
+    {{if contains . "youtube.com/watch"}}
+    <div class="okf-video-embed">
+        <iframe src="https://www.youtube.com/embed/{{youtubeID .}}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+    </div>
+    {{else}}
+    <p class="okf-source-line">
+        <span class="okf-source-label">Source URL:</span> <a href="{{.}}" target="_blank" rel="noopener">{{.}}</a>
+    </p>
+    {{end}}
+    {{end}}
+    {{end}}
     {{if or (eq (len (printf "%s" .Content)) 0) (eq (printf "%s" .Content) " ")}}
         <h1>{{.CurrentDir.Title}}</h1>
         <p><em>This document is empty. Click Edit to add content.</em></p>

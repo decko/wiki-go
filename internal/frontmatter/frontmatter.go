@@ -47,6 +47,40 @@ func Parse(content string) (Metadata, string, bool) {
 	return metadata, remainingContent, true
 }
 
+// ParseWithRawFields extracts frontmatter into both the typed Metadata struct
+// and a generic map of all fields. This preserves backward compatibility while
+// exposing arbitrary OKF fields (tags, type, resource, etc.).
+func ParseWithRawFields(content string) (Metadata, map[string]interface{}, string, bool) {
+	var metadata Metadata
+	var rawFields map[string]interface{}
+
+	if !strings.HasPrefix(content, "---\n") {
+		return metadata, nil, content, false
+	}
+
+	endDelimIndex := strings.Index(content[4:], "\n---")
+	if endDelimIndex == -1 {
+		return metadata, nil, content, false
+	}
+
+	fmContent := content[4 : 4+endDelimIndex]
+
+	// Parse into typed struct
+	if err := yaml.Unmarshal([]byte(fmContent), &metadata); err != nil {
+		return metadata, nil, content, false
+	}
+
+	// Parse into generic map
+	if err := yaml.Unmarshal([]byte(fmContent), &rawFields); err != nil {
+		return metadata, nil, content, false
+	}
+
+	remainingContent := content[4+endDelimIndex+4:]
+	remainingContent = strings.TrimLeft(remainingContent, "\n")
+
+	return metadata, rawFields, remainingContent, true
+}
+
 // HasFrontmatter checks if content has frontmatter
 func HasFrontmatter(content string) bool {
 	if !strings.HasPrefix(content, "---\n") {
