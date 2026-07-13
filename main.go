@@ -69,18 +69,18 @@ func main() {
 	handlers.InitHandlers(cfg)
 
 	// Setup all routes
-	routes.SetupRoutes(cfg)
+	handler := routes.SetupRoutes(cfg)
 
 	// Start the server
 	addr := fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port)
 	if cfg.Server.SSL && cfg.Server.SSLCert != "" && cfg.Server.SSLKey != "" {
 		logger.Info("HTTPS server starting on %s...", addr)
-		if err := http.ListenAndServeTLS(addr, cfg.Server.SSLCert, cfg.Server.SSLKey, nil); err != nil {
+		if err := http.ListenAndServeTLS(addr, cfg.Server.SSLCert, cfg.Server.SSLKey, handler); err != nil {
 			logger.Fatal("HTTPS server error: %v", err)
 		}
 	} else {
 		logger.Info("HTTP server starting on %s...", addr)
-		if err := http.ListenAndServe(addr, nil); err != nil {
+		if err := http.ListenAndServe(addr, handler); err != nil {
 			logger.Fatal("HTTP server error: %v", err)
 		}
 	}

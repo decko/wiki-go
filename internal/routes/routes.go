@@ -186,7 +186,7 @@ func handleFaviconRequest(w http.ResponseWriter, r *http.Request, cfg *config.Co
 }
 
 // SetupRoutes configures all routes for the application
-func SetupRoutes(cfg *config.Config) {
+func SetupRoutes(cfg *config.Config) http.Handler {
 	// Create a new ServeMux to apply middleware to all routes
 	mux := http.NewServeMux()
 
@@ -521,6 +521,5 @@ func SetupRoutes(cfg *config.Config) {
 	// Apply middleware to all routes
 	handler := CSPMiddleware(mux)
 
-	// Set the handler for the default ServeMux
-	http.Handle("/", handler)
+	return handler
 }
