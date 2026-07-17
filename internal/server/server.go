@@ -5,14 +5,14 @@ import (
 	"net/http"
 	"path/filepath"
 
-	"wiki-go/internal/auth"
-	"wiki-go/internal/config"
-	"wiki-go/internal/goldext"
-	"wiki-go/internal/handlers"
-	"wiki-go/internal/logger"
-	"wiki-go/internal/migration"
-	"wiki-go/internal/routes"
-	"wiki-go/internal/static"
+	"github.com/decko/wiki-go/internal/auth"
+	"github.com/decko/wiki-go/internal/config"
+	"github.com/decko/wiki-go/internal/goldext"
+	"github.com/decko/wiki-go/internal/handlers"
+	"github.com/decko/wiki-go/internal/logger"
+	"github.com/decko/wiki-go/internal/migration"
+	"github.com/decko/wiki-go/internal/routes"
+	"github.com/decko/wiki-go/internal/static"
 )
 
 func NewHandler(cfg *config.Config) (http.Handler, error) {

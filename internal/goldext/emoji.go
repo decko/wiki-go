@@ -5,8 +5,8 @@ import (
 	"io/fs"
 	"strings"
 
-	"wiki-go/internal/logger"
-	"wiki-go/internal/resources"
+	"github.com/decko/wiki-go/internal/logger"
+	"github.com/decko/wiki-go/internal/resources"
 )
 
 // EmojiData represents an emoji entry in the JSON file

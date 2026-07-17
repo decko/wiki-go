@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"sync"
-	"wiki-go/internal/logger"
+	"github.com/decko/wiki-go/internal/logger"
 )
 
 // SessionStore manages session persistence

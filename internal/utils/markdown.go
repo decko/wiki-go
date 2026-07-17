@@ -7,8 +7,8 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-	"wiki-go/internal/frontmatter"
-	"wiki-go/internal/goldext"
+	"github.com/decko/wiki-go/internal/frontmatter"
+	"github.com/decko/wiki-go/internal/goldext"
 
 	"github.com/yuin/goldmark"
 	"github.com/yuin/goldmark/extension"

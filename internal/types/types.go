@@ -3,8 +3,8 @@ package types
 import (
 	"html/template"
 	"time"
-	"wiki-go/internal/comments"
-	"wiki-go/internal/config"
+	"github.com/decko/wiki-go/internal/comments"
+	"github.com/decko/wiki-go/internal/config"
 )
 
 // Role constants are now defined in the roles package

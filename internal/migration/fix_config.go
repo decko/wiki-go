@@ -3,7 +3,7 @@ package migration
 import (
 	"bytes"
 	"os"
-	"wiki-go/internal/logger"
+	"github.com/decko/wiki-go/internal/logger"
 )
 
 // FixBrokenConfig checks for and fixes known configuration file corruption issues.

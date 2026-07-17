@@ -10,12 +10,12 @@ import (
 	"strings"
 	"time"
 
-	"wiki-go/internal/auth"
-	"wiki-go/internal/config"
-	"wiki-go/internal/i18n"
-	"wiki-go/internal/logger"
-	"wiki-go/internal/types"
-	"wiki-go/internal/utils"
+	"github.com/decko/wiki-go/internal/auth"
+	"github.com/decko/wiki-go/internal/config"
+	"github.com/decko/wiki-go/internal/i18n"
+	"github.com/decko/wiki-go/internal/logger"
+	"github.com/decko/wiki-go/internal/types"
+	"github.com/decko/wiki-go/internal/utils"
 )
 
 // Default homepage content

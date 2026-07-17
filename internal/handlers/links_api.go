@@ -9,9 +9,9 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
-	"wiki-go/internal/frontmatter"
-	"wiki-go/internal/logger"
-	"wiki-go/internal/utils"
+	"github.com/decko/wiki-go/internal/frontmatter"
+	"github.com/decko/wiki-go/internal/logger"
+	"github.com/decko/wiki-go/internal/utils"
 )
 
 // LinkRequest represents the JSON payload for link operations

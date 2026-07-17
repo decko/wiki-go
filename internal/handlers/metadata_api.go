@@ -10,7 +10,7 @@ import (
 	"regexp"
 	"strings"
 	"time"
-	"wiki-go/internal/logger"
+	"github.com/decko/wiki-go/internal/logger"
 )
 
 // MetadataRequest represents the request structure for metadata fetching

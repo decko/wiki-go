@@ -8,10 +8,10 @@ import (
 	"path/filepath"
 	"strings"
 
-	"wiki-go/internal/auth"
-	"wiki-go/internal/comments"
-	"wiki-go/internal/roles"
-	"wiki-go/internal/utils"
+	"github.com/decko/wiki-go/internal/auth"
+	"github.com/decko/wiki-go/internal/comments"
+	"github.com/decko/wiki-go/internal/roles"
+	"github.com/decko/wiki-go/internal/utils"
 )
 
 // CommentRequest represents the request body for adding a comment

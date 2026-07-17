@@ -11,9 +11,9 @@ import (
 	"strings"
 	"sync"
 	"time"
-	"wiki-go/internal/config"
-	"wiki-go/internal/crypto"
-	"wiki-go/internal/logger"
+	"github.com/decko/wiki-go/internal/config"
+	"github.com/decko/wiki-go/internal/crypto"
+	"github.com/decko/wiki-go/internal/logger"
 )
 
 // Session represents a user session

@@ -8,7 +8,7 @@ import (
 	"strings"
 	"sync"
 
-	"wiki-go/internal/i18n"
+	"github.com/decko/wiki-go/internal/i18n"
 
 	"github.com/yuin/goldmark"
 	"github.com/yuin/goldmark/extension"

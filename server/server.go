@@ -4,8 +4,8 @@ package server
 import (
 	"net/http"
 
-	"wiki-go/config"
-	internal "wiki-go/internal/server"
+	"github.com/decko/wiki-go/config"
+	internal "github.com/decko/wiki-go/internal/server"
 )
 
 // NewHandler creates the wiki HTTP handler from the given config.

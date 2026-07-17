@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
-	"wiki-go/internal/auth"
-	"wiki-go/internal/config"
-	"wiki-go/internal/crypto"
-	"wiki-go/internal/logger"
+	"github.com/decko/wiki-go/internal/auth"
+	"github.com/decko/wiki-go/internal/config"
+	"github.com/decko/wiki-go/internal/crypto"
+	"github.com/decko/wiki-go/internal/logger"
 )
 
 // User represents a user in the response

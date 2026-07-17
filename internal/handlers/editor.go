@@ -9,11 +9,11 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
-	"wiki-go/internal/auth"
-	"wiki-go/internal/i18n"
-	"wiki-go/internal/logger"
-	"wiki-go/internal/roles"
-	"wiki-go/internal/utils"
+	"github.com/decko/wiki-go/internal/auth"
+	"github.com/decko/wiki-go/internal/i18n"
+	"github.com/decko/wiki-go/internal/logger"
+	"github.com/decko/wiki-go/internal/roles"
+	"github.com/decko/wiki-go/internal/utils"
 )
 
 // SourceHandler handles requests to get the raw markdown content of a page

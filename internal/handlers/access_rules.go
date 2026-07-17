@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-	"wiki-go/internal/auth"
-	"wiki-go/internal/config"
-	"wiki-go/internal/logger"
+	"github.com/decko/wiki-go/internal/auth"
+	"github.com/decko/wiki-go/internal/config"
+	"github.com/decko/wiki-go/internal/logger"
 )
 
 // AccessRulesHandler handles requests for access rules

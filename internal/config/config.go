@@ -7,8 +7,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"wiki-go/internal/crypto"
-	"wiki-go/internal/roles"
+	"github.com/decko/wiki-go/internal/crypto"
+	"github.com/decko/wiki-go/internal/roles"
 
 	"gopkg.in/yaml.v3"
 )

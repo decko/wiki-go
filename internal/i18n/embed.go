@@ -5,8 +5,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"wiki-go/internal/logger"
-	"wiki-go/internal/resources"
+	"github.com/decko/wiki-go/internal/logger"
+	"github.com/decko/wiki-go/internal/resources"
 )
 
 // Instead of using embed, we'll read the files directly from the filesystem

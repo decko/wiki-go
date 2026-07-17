@@ -1,4 +1,4 @@
-module wiki-go
+module github.com/decko/wiki-go
 
 go 1.26.2
 

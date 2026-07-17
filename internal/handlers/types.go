@@ -3,8 +3,8 @@ package handlers
 import (
 	"html/template"
 	"time"
-	"wiki-go/internal/config"
-	"wiki-go/internal/utils"
+	"github.com/decko/wiki-go/internal/config"
+	"github.com/decko/wiki-go/internal/utils"
 )
 
 // PageData represents the data passed to templates

@@ -3,8 +3,8 @@ package handlers
 import (
 	"io"
 	"net/http"
-	"wiki-go/internal/auth"
-	"wiki-go/internal/utils"
+	"github.com/decko/wiki-go/internal/auth"
+	"github.com/decko/wiki-go/internal/utils"
 )
 
 // RenderMarkdownHandler handles requests to render markdown to HTML

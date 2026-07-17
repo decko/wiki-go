@@ -1,9 +1,9 @@
 package handlers
 
 import (
-	"wiki-go/internal/config"
-	"wiki-go/internal/i18n"
-	"wiki-go/internal/logger"
+	"github.com/decko/wiki-go/internal/config"
+	"github.com/decko/wiki-go/internal/i18n"
+	"github.com/decko/wiki-go/internal/logger"
 )
 
 var cfg *config.Config

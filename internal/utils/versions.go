@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
-	"wiki-go/internal/logger"
+	"github.com/decko/wiki-go/internal/logger"
 )
 
 // CleanupOldVersions removes old versions if the number of versions exceeds maxVersions

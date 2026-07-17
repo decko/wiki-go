@@ -3,7 +3,7 @@ package utils
 import (
 	"time"
 	_ "time/tzdata"
-	"wiki-go/internal/logger"
+	"github.com/decko/wiki-go/internal/logger"
 )
 
 // FormatTimeInTimezone formats a time.Time value using the specified timezone

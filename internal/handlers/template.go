@@ -12,11 +12,11 @@ import (
 	"sync"
 	"time"
 
-	"wiki-go/internal/i18n"
-	"wiki-go/internal/resources"
-	"wiki-go/internal/types"
-	"wiki-go/internal/utils"
-	"wiki-go/internal/version"
+	"github.com/decko/wiki-go/internal/i18n"
+	"github.com/decko/wiki-go/internal/resources"
+	"github.com/decko/wiki-go/internal/types"
+	"github.com/decko/wiki-go/internal/utils"
+	"github.com/decko/wiki-go/internal/version"
 )
 
 // renderTemplate renders the base template with the given data

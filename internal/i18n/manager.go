@@ -7,8 +7,8 @@ import (
 	"regexp"
 	"sort"
 	"sync"
-	"wiki-go/internal/config"
-	"wiki-go/internal/logger"
+	"github.com/decko/wiki-go/internal/config"
+	"github.com/decko/wiki-go/internal/logger"
 )
 
 // Regular expression to match placeholders like {{allowedTypes}}

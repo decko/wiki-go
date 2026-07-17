@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"wiki-go/internal/goldext"
-	"wiki-go/internal/types"
+	"github.com/decko/wiki-go/internal/goldext"
+	"github.com/decko/wiki-go/internal/types"
 
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"

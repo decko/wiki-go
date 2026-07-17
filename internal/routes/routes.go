@@ -9,12 +9,12 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"wiki-go/internal/auth"
-	"wiki-go/internal/config"
-	"wiki-go/internal/handlers"
-	"wiki-go/internal/logger"
-	"wiki-go/internal/resources"
-	"wiki-go/internal/tags"
+	"github.com/decko/wiki-go/internal/auth"
+	"github.com/decko/wiki-go/internal/config"
+	"github.com/decko/wiki-go/internal/handlers"
+	"github.com/decko/wiki-go/internal/logger"
+	"github.com/decko/wiki-go/internal/resources"
+	"github.com/decko/wiki-go/internal/tags"
 )
 
 // addCacheControlHeaders adds appropriate Cache-Control headers based on file type

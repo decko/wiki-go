@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"wiki-go/internal/frontmatter"
+	"github.com/decko/wiki-go/internal/frontmatter"
 )
 
 // DocumentRef represents a document with OKF metadata.

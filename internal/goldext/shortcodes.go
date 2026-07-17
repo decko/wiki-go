@@ -11,7 +11,7 @@ import (
 	"strings"
 	"sync"
 	"time"
-	"wiki-go/internal/logger"
+	"github.com/decko/wiki-go/internal/logger"
 )
 
 // wikiLocation is the resolved *time.Location for the configured wiki

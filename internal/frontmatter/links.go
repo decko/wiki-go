@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"wiki-go/internal/i18n"
+	"github.com/decko/wiki-go/internal/i18n"
 )
 
 // Link represents a single link in a links document

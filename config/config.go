@@ -1,7 +1,7 @@
 // Package config re-exports wiki-go configuration types for external consumers.
 package config
 
-import internal "wiki-go/internal/config"
+import internal "github.com/decko/wiki-go/internal/config"
 
 // Config represents the wiki server configuration.
 type Config = internal.Config

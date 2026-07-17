@@ -6,8 +6,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"wiki-go/internal/logger"
-	"wiki-go/internal/resources"
+	"github.com/decko/wiki-go/internal/logger"
+	"github.com/decko/wiki-go/internal/resources"
 )
 
 // List of static files to copy from resources to data/static

@@ -5,8 +5,8 @@ import (
 	"io"
 	"os"
 	"time"
-	"wiki-go/internal/logger"
-	"wiki-go/internal/roles"
+	"github.com/decko/wiki-go/internal/logger"
+	"github.com/decko/wiki-go/internal/roles"
 
 	"gopkg.in/yaml.v3"
 )

@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"os"
 
-	"wiki-go/internal/config"
-	"wiki-go/internal/logger"
-	"wiki-go/internal/server"
+	"github.com/decko/wiki-go/internal/config"
+	"github.com/decko/wiki-go/internal/logger"
+	"github.com/decko/wiki-go/internal/server"
 )
 
 func main() {

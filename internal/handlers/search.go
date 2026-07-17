@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"wiki-go/internal/auth"
-	"wiki-go/internal/config"
+	"github.com/decko/wiki-go/internal/auth"
+	"github.com/decko/wiki-go/internal/config"
 )
 
 type SearchRequest struct {

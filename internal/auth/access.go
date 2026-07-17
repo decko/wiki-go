@@ -3,7 +3,7 @@ package auth
 import (
 	"regexp"
 	"strings"
-	"wiki-go/internal/config"
+	"github.com/decko/wiki-go/internal/config"
 )
 
 // CanAccessDocument checks if the current session has access to the given document path
